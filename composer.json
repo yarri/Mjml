@@ -1,0 +1,25 @@
+{
+        "name": "yarri/mjml",
+        "type": "library",
+        "description": "",
+        "keywords": [],
+        "homepage": "https://github.com/yarri/",
+        "license": ["MIT"],
+        "authors": [
+                {
+                        "name": "Jaromir Tomek",
+                        "homepage": "https://github.com/yarri"
+                }
+        ],
+        "require": {
+                "php": ">=7.1",
+                "atk14/functions": "*"
+        },
+        "require-dev": {
+                "atk14/tester": "*",
+                "atk14/xmole": "*"
+        },
+        "autoload": {
+                "classmap": ["src"]
+        }
+}
