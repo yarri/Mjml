@@ -3,6 +3,8 @@ namespace Yarri\Mjml\Tags;
 
 class _Tag {
 
+	var $componentName;
+
 	var $endingTag = true;
 
 	var $allowedAttributes = [];
@@ -14,6 +16,8 @@ class _Tag {
 			"content" => "",
 			"attributes" => [],
 		];
+
+		$this->componentName = \String4::ToObject(get_class($this))->gsub('/^.*?([a-z]+)$/i','\1')->underscore()->replace('_','-')->lower()->toString(); // "Yarri\Mjml\Tags\MjSection" -> "mj-section"
 
 		$this->content = $params["content"];
 		$this->attributes = $params["attributes"];
@@ -62,12 +66,17 @@ class _Tag {
 		return join("",$out);
 	}
 
-	function renderContent(){
+	function render(){
 		return "";
 	}
 
-	function render(){
-		return "";
+	function suffixCssClasses($classes, $suffix){
+		$out = [];
+		foreach(explode(' ',$classes) as $c){
+			if(!strlen($c)){ continue; }
+			$out[] = "$c-$suffix";
+		}
+		return join(" ",$out);
 	}
 
 	function _trimHtml($text){

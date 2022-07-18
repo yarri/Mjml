@@ -13,7 +13,8 @@
         ],
         "require": {
                 "php": ">=7.1",
-                "atk14/functions": "*"
+                "atk14/functions": "*",
+                "atk14/string4": "*"
         },
         "require-dev": {
                 "atk14/tester": "*",
