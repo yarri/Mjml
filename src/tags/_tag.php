@@ -3,13 +3,13 @@ namespace Yarri\Mjml\Tags;
 
 class _Tag {
 
-	var $componentName;
+	static $componentName;
 
-	var $endingTag = true;
+	static $endingTag;
 
-	var $allowedAttributes = [];
+	static $allowedAttributes = [];
 
-	var $defaultAttributes = [];
+	static $defaultAttributes = [];
 
 	function __construct($params = []){
 		$params += [
@@ -17,7 +17,7 @@ class _Tag {
 			"attributes" => [],
 		];
 
-		$this->componentName = \String4::ToObject(get_class($this))->gsub('/^.*?([a-z]+)$/i','\1')->underscore()->replace('_','-')->lower()->toString(); // "Yarri\Mjml\Tags\MjSection" -> "mj-section"
+		// $this::$componentName = \String4::ToObject(get_class($this))->gsub('/^.*?([a-z]+)$/i','\1')->underscore()->replace('_','-')->lower()->toString(); // "Yarri\Mjml\Tags\MjSection" -> "mj-section"
 
 		$this->content = $params["content"];
 		$this->attributes = $params["attributes"];
@@ -28,7 +28,7 @@ class _Tag {
 	}
 
 	function getAttribute($name){
-		$defaults = $this->defaultAttributes;
+		$defaults = static::$defaultAttributes;
 		$attribute = isset($defaults[$name]) ? $defaults[$name] : null;
 		if(array_key_exists($name,$this->attributes)){
 			$attribute = $this->attributes[$name];

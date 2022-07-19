@@ -3,7 +3,7 @@ class TcMjSection extends TcBase {
 
 	function test_componentName(){
 		$mj_section = new Yarri\Mjml\Tags\MjSection();
-		$this->assertEquals("mj-section",$mj_section->componentName);
+		$this->assertEquals("mj-section",$mj_section::$componentName);
 	}
 
 	function test_background(){

@@ -3,7 +3,11 @@ namespace Yarri\Mjml\Tags;
 
 class MjText extends _Tag {
 
-	var $allowedAttributes = [
+	static $componentName = "mj-text";
+
+	static $endingTag = true;
+
+	static $allowedAttributes = [
 		'align' => 'enum(left,right,center,justify)',
 		'background-color' => 'color',
 		'color' => 'color',
@@ -25,7 +29,7 @@ class MjText extends _Tag {
 		'vertical-align' => 'enum(top,bottom,middle)'
 	];
 
-	var $defaultAttributes = [
+	static $defaultAttributes = [
 		'align' => 'left',
 		'color' => '#000000',
 		'font-family' => 'Ubuntu, Helvetica, Arial, sans-serif',
@@ -53,7 +57,13 @@ class MjText extends _Tag {
 	}
 
 	function renderContent(){
-		return "<div {$this->htmlAttributes(["style" => "text"])}>{$this->getContent()}</div>";
+		return "
+			<div
+				{$this->htmlAttributes([
+					"style" => "text"]
+				)}
+			>{$this->getContent()}</div>
+		";
 	}
 
 	function render(){

@@ -3,7 +3,9 @@ namespace Yarri\Mjml\Tags;
 
 class MjSection extends _Tag {
 
-	var $allowedAttributes = [
+	static $componentName = "mj-section";
+
+	static $allowedAttributes = [
 		'background-color' => 'color',
 		'background-url' => 'string',
 		'background-repeat' => 'enum(repeat,no-repeat)',
@@ -28,7 +30,7 @@ class MjSection extends _Tag {
 		'text-padding' => 'unit(px,%){1,4}'
 	];
 
-	var $defaultAttributes = [
+	static $defaultAttributes = [
 		'background-repeat' => 'repeat',
 		'background-size' => 'auto',
 		'background-position' => 'top center',
