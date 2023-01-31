@@ -18,7 +18,8 @@
         },
         "require-dev": {
                 "atk14/tester": "*",
-                "atk14/xmole": "*"
+                "atk14/xmole": "dev-master",
+                "atk14/files": "*"
         },
         "autoload": {
                 "classmap": ["src"]

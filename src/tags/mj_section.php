@@ -218,15 +218,69 @@ class MjSection extends _Tag {
 	}
 
 	function renderWrappedChildren(){
-
+		// TODO
+		return $this->getContent();
 	}
 
 	function renderWithBackground($content){
-
+		// TODO
+		return $content;
 	}
 
 	function renderSection(){
+      $hasBackground = $this->hasBackground();
+			$out = [];
 
+			$out[] = "<div {$this->htmlAttributes([
+        'class' => $this->isFullWidth() ? null : $this->getAttribute('css-class'),
+        'style' => 'div'
+      ])}>";
+			$out[] = $hasBackground ? "<table
+        {$this->htmlAttributes([
+					'align' => 'center',
+					'background' => $this->isFullWidth() ? null : $this->getAttribute('background-url'),
+					'border' => '0',
+					'cellpadding' => '0',
+					'cellspacing' => '0',
+					'role' => 'presentation',
+					'style' => 'table'
+      	])}
+      >" : "";
+			$out[] = "
+        <table
+          {$this->htmlAttributes([
+						'align' => 'center',
+						'background' => $this->isFullWidth() ? null : $this->getAttribute('background-url'),
+						'border' => '0',
+						'cellpadding' => '0',
+						'cellspacing' => '0',
+						'role' => 'presentation',
+						'style' => 'table'
+      ])}
+        >
+          <tbody>
+            <tr>
+              <td
+                {$this->htmlAttributes([
+									'style' => 'td'
+								])}
+              >
+                <!--[if mso | IE]>
+                  <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">
+                <![endif]-->
+                  {$this->renderWrappedChildren()}
+                <!--[if mso | IE]>
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+			";
+
+			$out[] = $hasBackground ? "</table>" : "";
+			$out[] = "</div>";
+			return join("\n",$out);
 	}
 
 	function renderFullWidth(){

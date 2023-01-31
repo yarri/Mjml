@@ -11,6 +11,10 @@ class _Tag {
 
 	static $defaultAttributes = [];
 
+	public $props = [
+		"nonRawSiblings" => [],
+	];
+
 	function __construct($params = []){
 		$params += [
 			"content" => "",
@@ -21,6 +25,10 @@ class _Tag {
 
 		$this->content = $params["content"];
 		$this->attributes = $params["attributes"];
+
+		$context = new class{ };
+		$context->containerWidth = 300;
+		$this->context = $context;
 	}
 
 	function getContent(){
@@ -67,7 +75,12 @@ class _Tag {
 	}
 
 	function render(){
-		return "";
+		return $this->getContent();
+	}
+
+	function renderChildren(){
+		// TODO: ???
+		return $this->getContent();
 	}
 
 	function suffixCssClasses($classes, $suffix){
