@@ -119,6 +119,8 @@ class TcMjmlHead extends TcBase {
 		';
 		$html = Yarri\Mjml::Mjml2Html($src);
 		$this->assertStringContains('color:#333333;', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
 	}
 
 	function test_attributes_explicit_overrides_default(){
@@ -141,6 +143,8 @@ class TcMjmlHead extends TcBase {
 		$html = Yarri\Mjml::Mjml2Html($src);
 		$this->assertStringContains('color:#ff0000;', $html);
 		$this->assertStringNotContains('color:#333333;', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
 	}
 
 	function test_html_attributes(){
@@ -162,6 +166,8 @@ class TcMjmlHead extends TcBase {
 		';
 		$html = Yarri\Mjml::Mjml2Html($src);
 		$this->assertStringContains('data-tracking="newsletter"', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
 	}
 
 	function test_attributes_mj_all(){
@@ -183,5 +189,7 @@ class TcMjmlHead extends TcBase {
 		';
 		$html = Yarri\Mjml::Mjml2Html($src);
 		$this->assertStringContains('Georgia, serif', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
 	}
 }
