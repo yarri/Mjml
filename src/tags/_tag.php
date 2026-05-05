@@ -66,7 +66,13 @@ class _Tag {
 		$styles = $this->getStyles();
 
 		if(is_string($_styles)){
-			$styles_ar = isset($styles[$_styles]) ? $styles[$_styles] : [];
+			if(strpos($_styles, '.') !== false){
+				// Handle dot-notation: e.g. 'carousel.div' → $styles['carousel']['div']
+				[$group, $key] = explode('.', $_styles, 2);
+				$styles_ar = isset($styles[$group][$key]) ? $styles[$group][$key] : [];
+			}else{
+				$styles_ar = isset($styles[$_styles]) ? $styles[$_styles] : [];
+			}
 		}else{
 			$styles_ar = $_styles;
 		}

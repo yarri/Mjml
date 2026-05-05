@@ -10,12 +10,17 @@ class GlobalData {
 	public $preview = '';
 	public $fonts = [];
 	public $style = [];
-	public $headStyle = []; // map[componentName => callable($breakpoint)]
+	public $headStyle = []; // map[componentName => callable($breakpoint)] — deduplicated per component type
+	public $componentsHeadStyle = []; // array of callables — per-instance (carousel, etc.)
 	public $headRaw = [];
 	public $defaultAttributes = [];
 
 	function addHeadStyle($componentName, $callable){
 		$this->headStyle[$componentName] = $callable;
+	}
+
+	function addComponentHeadStyle($callable){
+		$this->componentsHeadStyle[] = $callable;
 	}
 
 	function addMediaQuery($className, $parsedWidth, $unit){

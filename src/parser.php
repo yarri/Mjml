@@ -41,6 +41,7 @@ class Parser {
 			'fonts' => $globalData->fonts,
 			'style' => $globalData->style,
 			'headStyle' => $globalData->headStyle,
+			'componentsHeadStyle' => $globalData->componentsHeadStyle,
 		]);
 
 		$out = \Yarri\Mjml\Skeleton::mergeOutlookConditionals($out);
@@ -161,9 +162,13 @@ class Parser {
 			$tag_obj->context->globalData = $globalData;
 		}
 
-		// Register component headStyle (e.g. navbar hamburger CSS)
+		// Register component headStyle (e.g. navbar hamburger CSS) — deduplicated per type
 		if(method_exists($tag_obj, 'headStyle') && isset($tag_obj->context->globalData)){
 			$tag_obj->context->globalData->addHeadStyle($tag_name, [$tag_obj, 'headStyle']);
+		}
+		// Register per-instance componentHeadStyle (e.g. carousel — each instance has unique CSS)
+		if(method_exists($tag_obj, 'componentHeadStyle') && isset($tag_obj->context->globalData)){
+			$tag_obj->context->globalData->addComponentHeadStyle([$tag_obj, 'componentHeadStyle']);
 		}
 
 		// Set how many siblings this element has

@@ -25,6 +25,7 @@ class Skeleton {
 		$title = $options['title'];
 
 		$headStyle = $options['headStyle'] ?? [];
+		$componentsHeadStyle = $options['componentsHeadStyle'] ?? [];
 
 		$fontsTags = self::buildFontsTags($content, $fonts);
 		$mediaQueriesTags = self::buildMediaQueriesTags($breakpoint, $mediaQueries);
@@ -32,6 +33,9 @@ class Skeleton {
 		$headStyleCss = '';
 		foreach($headStyle as $callable){
 			$headStyleCss .= "\n" . call_user_func($callable, $breakpoint);
+		}
+		foreach($componentsHeadStyle as $callable){
+			$headStyleCss .= "\n" . call_user_func($callable);
 		}
 		$customStyle = $style ? join("\n    ", $style) : '';
 		$bodyStyle = 'word-spacing:normal;' . ($backgroundColor ? "background-color:{$backgroundColor};" : '');
