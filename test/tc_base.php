@@ -2,6 +2,16 @@
 class TcBase extends TcSuperbase {
 
 	function _compare_html($expected,$actual){
+		// Strip DOCTYPE declaration (PHP expat cannot parse it)
+		$expected = preg_replace('/<!doctype[^>]*>/si', '', $expected);
+		$actual = preg_replace('/<!doctype[^>]*>/si', '', $actual);
+		// Extract body content if full HTML document
+		if(preg_match('/<body[^>]*>(.*?)<\/body>/si', $expected, $m)){
+			$expected = $m[1];
+		}
+		if(preg_match('/<body[^>]*>(.*?)<\/body>/si', $actual, $m)){
+			$actual = $m[1];
+		}
 		$expected = new XMole("<xml>$expected</xml>");
 		$actual = new XMole("<xml>$actual</xml>");
 		return XMole::AreSame($expected,$actual);

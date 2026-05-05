@@ -14,6 +14,12 @@ class MjBody extends _Tag {
 		'width' => '600px'
 	];
 
+	function getChildContext(){
+		$context = clone $this->context;
+		$context->containerWidth = $this->getAttribute('width');
+		return $context;
+	}
+
 	function getStyles(){
 		return [
 			"div" => [
@@ -28,9 +34,6 @@ class MjBody extends _Tag {
 				{$this->htmlAttributes([
 					'class' => $this->getAttribute('css-class'),
 					'style' => 'div',
-					// TODO: ???
-					//$lang,
-					//$dir
 			])}
 			>
 				{$this->renderChildren()}
