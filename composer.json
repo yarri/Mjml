@@ -14,11 +14,11 @@
         "require": {
                 "php": ">=7.1",
                 "atk14/functions": "*",
-                "atk14/string4": "*"
+                "atk14/string4": "*",
+                "atk14/xmole": "^1.0"
         },
         "require-dev": {
                 "atk14/tester": "*",
-                "atk14/xmole": "dev-master",
                 "atk14/files": "*"
         },
         "autoload": {

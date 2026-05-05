@@ -40,17 +40,20 @@ class MjSection extends _Tag {
 		'text-padding' => '4px 4px 4px 0'
 	];
 
+	function getChildContext(){
+		$ar = $this->getBoxWidths();
+		$box = $ar['box'];
+		$context = clone $this->context;
+		$context->containerWidth = "{$box}px";
+		return $context;
+	}
+
 	function getStyles(){
-		/*
-		const {
-			containerWidth
-		} = this.context;
-		*/
 		$containerWidth = $this->context->containerWidth;
 		$fullWidth = $this->isFullWidth();
+
 		$background = $this->getAttribute('background-url') ? [
 			'background' => $this->getBackground(),
-			// background size, repeat and position has to be seperate since yahoo does not support shorthand background css property
 			'background-position' => $this->getBackgroundString(),
 			'background-repeat' => $this->getAttribute('background-repeat'),
 			'background-size' => $this->getAttribute('background-size')
@@ -58,11 +61,12 @@ class MjSection extends _Tag {
 			'background' => $this->getAttribute('background-color'),
 			'background-color' => $this->getAttribute('background-color')
 		];
+
 		return [
 			'tableFullwidth' => ($fullWidth ? $background : []) + [
-					'width' => '100%',
-					'border-radius' => $this->getAttribute('border-radius')
-				],
+				'width' => '100%',
+				'border-radius' => $this->getAttribute('border-radius')
+			],
 			'table' => ($fullWidth ? [] : $background) + [
 				'width' => '100%',
 				'border-radius' => $this->getAttribute('border-radius')
@@ -95,15 +99,17 @@ class MjSection extends _Tag {
 	}
 
 	function getBackground(){
-		$ar = [];
-		$ar[] = $this->getAttribute('background-color');
+		$parts = [];
+		$parts[] = $this->getAttribute('background-color');
 		if($this->hasBackground()){
-			$ar[] = "url('{$this->getAttribute('background-url')}')";
-			$ar[] = $this->getBackgroundString();
-			$ar[] = "/ {$this->getAttribute('background-size')}";
-			$ar[] = $this->getAttribute('background-repeat');
+			$parts[] = "url('{$this->getAttribute('background-url')}')";
+			$parts[] = $this->getBackgroundString();
+			$parts[] = "/ {$this->getAttribute('background-size')}";
+			$parts[] = $this->getAttribute('background-repeat');
 		}
-		return $this->makeBackgroundString($out);
+		return join(' ', array_filter($parts, function($v){
+			return !is_null($v) && strlen((string)$v) > 0;
+		}));
 	}
 
 	function getBackgroundString(){
@@ -114,61 +120,40 @@ class MjSection extends _Tag {
 	}
 
 	function getBackgroundPosition(){
-    $ar = $this->parseBackgroundPosition();
+		$ar = $this->parseBackgroundPosition();
 		$x = $ar["x"];
 		$y = $ar["y"];
-    return [
-      "posX" => $this->getAttribute('background-position-x') ? $this->getAttribute('background-position-x') : $x,
-      "posY" => $this->getAttribute('background-position-y') ? $this->getAttribute('background-position-y') : $y
-    ];
+		return [
+			"posX" => $this->getAttribute('background-position-x') ?: $x,
+			"posY" => $this->getAttribute('background-position-y') ?: $y
+		];
 	}
 
 	function parseBackgroundPosition(){
-			$posSplit = explode(' ',$this->getAttribute('background-position'));
+		$posSplit = explode(' ', $this->getAttribute('background-position'));
 
-			if (sizeof($posSplit) === 1) {
-				$val = $posSplit[0]; // here we must determine if x or y was provided ; other will be center
-
-				if (in_array($val,['top', 'bottom'])) {
-					return [
-						'x' => 'center',
-						'y' => $val
-					];
-				}
-
-				return [
-					'x' => $val,
-					'y' => 'center'
-				];
+		if(sizeof($posSplit) === 1){
+			$val = $posSplit[0];
+			if(in_array($val, ['top', 'bottom'])){
+				return ['x' => 'center', 'y' => $val];
 			}
+			return ['x' => $val, 'y' => 'center'];
+		}
 
-			if (sizeof($posSplit) === 2) {
-				// x and y can be put in any order in background-position so we need to determine that based on values
-				$val1 = $posSplit[0];
-				$val2 = $posSplit[1];
+		if(sizeof($posSplit) === 2){
+			$val1 = $posSplit[0];
+			$val2 = $posSplit[1];
+			if(in_array($val1, ['top', 'bottom']) || ($val1 === 'center' && in_array($val2, ['left', 'right']))){
+				return ['x' => $val2, 'y' => $val1];
+			}
+			return ['x' => $val1, 'y' => $val2];
+		}
 
-				if (in_array($val1,['top', 'bottom']) || $val1 === 'center' && in_array($val2,['left', 'right'])) {
-					return [
-						'x' => $val2,
-						'y' => $val1
-					];
-				}
-
-				return [
-					'x' => $val1,
-					'y' => $val2
-				];
-			} // more than 2 values is not supported, let's treat as default value
-
-
-			return [
-				'x' => 'center',
-				'y' => 'top'
-			];
+		return ['x' => 'center', 'y' => 'top'];
 	}
 
 	function hasBackground(){
-		return strlen((string)$this->getAttribute('background-url'))>0;
+		return strlen((string)$this->getAttribute('background-url')) > 0;
 	}
 
 	function isFullWidth(){
@@ -176,30 +161,24 @@ class MjSection extends _Tag {
 	}
 
 	function renderBefore(){
-		/*
-		const {
-			containerWidth
-		} = this.context;
-		*/
 		$containerWidth = $this->context->containerWidth;
 		$bgcolorAttr = $this->getAttribute('background-color') ? [
 			"bgcolor" => $this->getAttribute('background-color')
 		] : [];
+
 		return "
 		<!--[if mso | IE]>
 		<table
-			{$this->htmlAttributes([
+			{$this->htmlAttributes(array_merge([
 				'align' => 'center',
 				'border' => '0',
 				'cellpadding' => '0',
 				'cellspacing' => '0',
 				'class' => $this->suffixCssClasses($this->getAttribute('css-class'), 'outlook'),
 				'role' => 'presentation',
-				'style' => [
-					'width' => $containerWidth
-				],
+				'style' => ['width' => $containerWidth],
 				'width' => (int)$containerWidth,
-			] + $bgcolorAttr)}
+			], $bgcolorAttr))}
 		>
 			<tr>
 				<td style=\"line-height:0px;font-size:0px;mso-line-height-rule:exactly;\">
@@ -218,115 +197,214 @@ class MjSection extends _Tag {
 	}
 
 	function renderWrappedChildren(){
-		// TODO
-		return $this->getContent();
+		$section = $this;
+		$wrappedChildren = $this->renderChildren(function($component) use ($section){
+			return "
+			<!--[if mso | IE]><td {$component->htmlAttributes([
+				'align' => $component->getAttribute('align'),
+				'class' => $section->suffixCssClasses($component->getAttribute('css-class'), 'outlook'),
+				'style' => 'tdOutlook'
+			])}><![endif]-->
+				{$component->render()}
+			<!--[if mso | IE]></td><![endif]-->
+			";
+		});
+
+		return "
+		<!--[if mso | IE]><tr><![endif]-->
+			$wrappedChildren
+		<!--[if mso | IE]></tr><![endif]-->
+		";
 	}
 
 	function renderWithBackground($content){
-		// TODO
-		return $content;
+		$fullWidth = $this->isFullWidth();
+		$containerWidth = $this->context->containerWidth;
+
+		$isPercentage = function($str){
+			return (bool)preg_match('/^\d+(\.\d+)?%$/', (string)$str);
+		};
+
+		$ar = $this->getBackgroundPosition();
+		$bgPosX = $ar['posX'];
+		$bgPosY = $ar['posY'];
+
+		switch($bgPosX){
+			case 'left':   $bgPosX = '0%'; break;
+			case 'center': $bgPosX = '50%'; break;
+			case 'right':  $bgPosX = '100%'; break;
+			default:
+				if(!$isPercentage($bgPosX)){ $bgPosX = '50%'; }
+				break;
+		}
+		switch($bgPosY){
+			case 'top':    $bgPosY = '0%'; break;
+			case 'center': $bgPosY = '50%'; break;
+			case 'bottom': $bgPosY = '100%'; break;
+			default:
+				if(!$isPercentage($bgPosY)){ $bgPosY = '0%'; }
+				break;
+		}
+
+		$bgRepeat = $this->getAttribute('background-repeat') === 'repeat';
+
+		$calcPos = function($pos, $isX) use ($isPercentage, $bgRepeat){
+			if($isPercentage($pos)){
+				$pct = (float)preg_replace('/%$/', '', $pos);
+				$decimal = $pct / 100;
+				if($bgRepeat){
+					return [$decimal, $decimal];
+				}else{
+					$v = (-50 + $decimal * 100) / 100;
+					return [$v, $v];
+				}
+			}elseif($bgRepeat){
+				$origin = $isX ? '0.5' : '0';
+				$p = $isX ? '0.5' : '0';
+				return [$origin, $p];
+			}else{
+				$origin = $isX ? '0' : '-0.5';
+				$p = $isX ? '0' : '-0.5';
+				return [$origin, $p];
+			}
+		};
+
+		list($vOriginX, $vPosX) = $calcPos($bgPosX, true);
+		list($vOriginY, $vPosY) = $calcPos($bgPosY, false);
+
+		$bgSize = $this->getAttribute('background-size');
+		$vSizeAttributes = [];
+
+		if($bgSize === 'cover' || $bgSize === 'contain'){
+			$vSizeAttributes = [
+				'size' => '1,1',
+				'aspect' => $bgSize === 'cover' ? 'atleast' : 'atmost',
+			];
+		}elseif($bgSize !== 'auto'){
+			$bgSplit = explode(' ', $bgSize);
+			if(count($bgSplit) === 1){
+				$vSizeAttributes = ['size' => $bgSize, 'aspect' => 'atmost'];
+			}else{
+				$vSizeAttributes = ['size' => join(',', $bgSplit)];
+			}
+		}
+
+		$vmlType = $this->getAttribute('background-repeat') === 'no-repeat' ? 'frame' : 'tile';
+
+		if($bgSize === 'auto'){
+			$vmlType = 'tile';
+			$vOriginX = 0.5; $vPosX = 0.5;
+			$vOriginY = 0;   $vPosY = 0;
+		}
+
+		$rectStyleAttr = $fullWidth ? ['mso-width-percent' => '1000'] : ['width' => $containerWidth];
+
+		$vFillAttributes = array_merge([
+			'origin'   => "{$vOriginX}, {$vOriginY}",
+			'position' => "{$vPosX}, {$vPosY}",
+			'src'      => $this->getAttribute('background-url'),
+			'color'    => $this->getAttribute('background-color'),
+			'type'     => $vmlType,
+		], $vSizeAttributes);
+
+		$rectAttrs = $this->htmlAttributes([
+			'style'   => $rectStyleAttr,
+			'xmlns:v' => 'urn:schemas-microsoft-com:vml',
+			'fill'    => 'true',
+			'stroke'  => 'false',
+		]);
+		$fillAttrs = $this->htmlAttributes($vFillAttributes);
+
+		return "
+		<!--[if mso | IE]>
+			<v:rect {$rectAttrs}>
+			<v:fill {$fillAttrs} />
+			<v:textbox style=\"mso-fit-shape-to-text:true\" inset=\"0,0,0,0\">
+		<![endif]-->
+			{$content}
+		<!--[if mso | IE]>
+			</v:textbox>
+			</v:rect>
+		<![endif]-->
+		";
 	}
 
 	function renderSection(){
-      $hasBackground = $this->hasBackground();
-			$out = [];
+		$hasBackground = $this->hasBackground();
 
-			$out[] = "<div {$this->htmlAttributes([
-        'class' => $this->isFullWidth() ? null : $this->getAttribute('css-class'),
-        'style' => 'div'
-      ])}>";
-			$out[] = $hasBackground ? "<table
-        {$this->htmlAttributes([
-					'align' => 'center',
-					'background' => $this->isFullWidth() ? null : $this->getAttribute('background-url'),
-					'border' => '0',
-					'cellpadding' => '0',
-					'cellspacing' => '0',
-					'role' => 'presentation',
-					'style' => 'table'
-      	])}
-      >" : "";
-			$out[] = "
-        <table
-          {$this->htmlAttributes([
-						'align' => 'center',
-						'background' => $this->isFullWidth() ? null : $this->getAttribute('background-url'),
-						'border' => '0',
-						'cellpadding' => '0',
-						'cellspacing' => '0',
-						'role' => 'presentation',
-						'style' => 'table'
-      ])}
-        >
-          <tbody>
-            <tr>
-              <td
-                {$this->htmlAttributes([
-									'style' => 'td'
-								])}
-              >
-                <!--[if mso | IE]>
-                  <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">
-                <![endif]-->
-                  {$this->renderWrappedChildren()}
-                <!--[if mso | IE]>
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-			";
+		$divAttrs = $this->htmlAttributes([
+			'class' => $this->isFullWidth() ? null : $this->getAttribute('css-class'),
+			'style' => 'div'
+		]);
+		$tableAttrs = $this->htmlAttributes([
+			'align'       => 'center',
+			'background'  => $this->isFullWidth() ? null : $this->getAttribute('background-url'),
+			'border'      => '0',
+			'cellpadding' => '0',
+			'cellspacing' => '0',
+			'role'        => 'presentation',
+			'style'       => 'table'
+		]);
+		$tdAttrs = $this->htmlAttributes(['style' => 'td']);
+		$innerDivAttrs = $this->htmlAttributes(['style' => 'innerDiv']);
+		$wrappedChildren = $this->renderWrappedChildren();
 
-			$out[] = $hasBackground ? "</table>" : "";
-			$out[] = "</div>";
-			return join("\n",$out);
+		$out = [];
+		$out[] = "<div {$divAttrs}>";
+		if($hasBackground){ $out[] = "<div {$innerDivAttrs}>"; }
+		$out[] = "<table {$tableAttrs}>";
+		$out[] = "<tbody><tr><td {$tdAttrs}>";
+		$out[] = "<!--[if mso | IE]><table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><![endif]-->";
+		$out[] = $wrappedChildren;
+		$out[] = "<!--[if mso | IE]></table><![endif]-->";
+		$out[] = "</td></tr></tbody></table>";
+		if($hasBackground){ $out[] = "</div>"; }
+		$out[] = "</div>";
+
+		return join("\n", $out);
 	}
 
 	function renderFullWidth(){
-		$content = $this->hasBackground() ? $this->renderWithBackground("
-			{$this->renderBefore()}
-			{$this->renderSection()}
-			{$this->renderAfter()}
-		") : "
-			{$this->renderBefore()}
-			{$this->renderSection()}
-			{$this->renderAfter()}
-		";
+		$content = $this->hasBackground()
+			? $this->renderWithBackground(
+				$this->renderBefore() .
+				$this->renderSection() .
+				$this->renderAfter()
+			)
+			: $this->renderBefore() . $this->renderSection() . $this->renderAfter();
+
+		$tableAttrs = $this->htmlAttributes([
+			'align'       => 'center',
+			'class'       => $this->getAttribute('css-class'),
+			'background'  => $this->getAttribute('background-url'),
+			'border'      => '0',
+			'cellpadding' => '0',
+			'cellspacing' => '0',
+			'role'        => 'presentation',
+			'style'       => 'tableFullwidth'
+		]);
+
 		return "
-			<table
-				{$this->htmlAttributes([
-				'align' => 'center',
-				'class' => $this->getAttribute('css-class'),
-				'background' => $this->getAttribute('background-url'),
-				'border' => '0',
-				'cellpadding' => '0',
-				'cellspacing' => '0',
-				'role' => 'presentation',
-				'style' => 'tableFullwidth'
-			])}
-			>
-				<tbody>
-					<tr>
-						<td>
-							{$content}
-						</td>
-					</tr>
-				</tbody>
-			</table>
+		<table {$tableAttrs}>
+			<tbody>
+				<tr>
+					<td>
+						{$content}
+					</td>
+				</tr>
+			</tbody>
+		</table>
 		";
 	}
 
 	function renderSimple(){
 		$section = $this->renderSection();
-		return
-			$this->renderBefore().
-			($this->hasBackground() ? $this->renderWithBackground($section) : $section).
-			$this->renderAfter();
+		return $this->renderBefore()
+			. ($this->hasBackground() ? $this->renderWithBackground($section) : $section)
+			. $this->renderAfter();
 	}
 
 	function render(){
 		return $this->isFullWidth() ? $this->renderFullWidth() : $this->renderSimple();
 	}
-	
 }

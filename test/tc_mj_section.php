@@ -30,4 +30,68 @@ class TcMjSection extends TcBase {
 		$mj_section = new Yarri\Mjml\Tags\MjSection(["attributes" => ["background-url" => "/public/rose.jpg"]]);
 		$this->assertTrue($mj_section->hasBackground());
 	}
+
+	function test_integration_background_color(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section background-color="#ffeeff">
+						<mj-column><mj-text>Hello</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('#ffeeff', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
+	}
+
+	function test_integration_background_url(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section background-url="https://example.com/bg.jpg" background-size="cover" background-repeat="no-repeat">
+						<mj-column><mj-text>Hello</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('example.com/bg.jpg', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
+	}
+
+	function test_integration_full_width(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section full-width="full-width" background-color="#dddddd">
+						<mj-column><mj-text>Full width section</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('Full width section', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
+	}
+
+	function test_integration_border_padding(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section border="1px solid #aaaaaa" padding="40px 20px" border-radius="8px">
+						<mj-column><mj-text>Bordered section</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('1px solid #aaaaaa', $html);
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
+	}
 }
