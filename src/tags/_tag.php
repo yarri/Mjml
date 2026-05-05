@@ -31,9 +31,7 @@ class _Tag {
 		$this->content = $params["content"];
 		$this->attributes = $params["attributes"];
 
-		$context = new class{
-			public $containerWidth;
-		};
+		$context = new \stdClass();
 		$context->containerWidth = '600px';
 		$this->context = $context;
 	}

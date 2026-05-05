@@ -12,7 +12,8 @@ class Parser {
 	}
 
 	function parse(){
-		$body_tag = $this->_buildTag($this->body);
+		$globalData = new \Yarri\Mjml\GlobalData();
+		$body_tag = $this->_buildTag($this->body, null, 1, $globalData);
 		$out = $body_tag->render();
 
 		// Remove newlines and extra whitespace inside HTML tags
@@ -27,6 +28,20 @@ class Parser {
 			$out
 		);
 
+		$out = \Yarri\Mjml\Skeleton::minifyOutlookConditionals($out);
+
+		$out = \Yarri\Mjml\Skeleton::render([
+			'content' => $out,
+			'backgroundColor' => $globalData->backgroundColor,
+			'breakpoint' => $globalData->breakpoint,
+			'mediaQueries' => $globalData->mediaQueries,
+			'title' => $globalData->title,
+			'preview' => $globalData->preview,
+			'fonts' => $globalData->fonts,
+		]);
+
+		$out = \Yarri\Mjml\Skeleton::mergeOutlookConditionals($out);
+
 		return $out;
 	}
 
@@ -38,7 +53,7 @@ class Parser {
 	 * @param int $nonRawSiblings   How many mj-* siblings this element has (including itself)
 	 * @return \Yarri\Mjml\Tags\_Tag
 	 */
-	function _buildTag(\XMole $element, $context = null, $nonRawSiblings = 1){
+	function _buildTag(\XMole $element, $context = null, $nonRawSiblings = 1, $globalData = null){
 		$tag_name = $element->get_root_name();
 		$attributes = $element->get_root_attributes();
 
@@ -61,6 +76,9 @@ class Parser {
 		// Propagate context from parent
 		if($context !== null){
 			$tag_obj->context = $context;
+		} elseif($globalData !== null){
+			// Root node: attach globalData to its fresh context
+			$tag_obj->context->globalData = $globalData;
 		}
 
 		// Set how many siblings this element has

@@ -184,6 +184,10 @@ class MjColumn extends _Tag {
 				break;
 		}
 
+		if(isset($this->context->globalData)){
+			$this->context->globalData->addMediaQuery($className, $parsedWidth, $unit);
+		}
+
 		return $className;
 	}
 

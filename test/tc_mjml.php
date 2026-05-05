@@ -25,6 +25,65 @@ class TcMjml extends TcBase {
 	}
 
 
+	function test_full_document(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section>
+						<mj-column>
+							<mj-text>Hello!</mj-text>
+						</mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+
+		// full HTML document structure
+		$this->assertStringContains('<!doctype html>', $html);
+		$this->assertStringContains('<html xmlns="http://www.w3.org/1999/xhtml"', $html);
+		$this->assertStringContains('</html>', $html);
+		$this->assertStringContains('<head>', $html);
+		$this->assertStringContains('<body ', $html);
+		$this->assertStringContains('word-spacing:normal;', $html);
+
+		// media query for single column (100%)
+		$this->assertStringContains('@media only screen and (min-width:480px)', $html);
+		$this->assertStringContains('.mj-column-per-100 { width:100% !important; max-width: 100%; }', $html);
+		$this->assertStringContains('.moz-text-html .mj-column-per-100', $html);
+	}
+
+	function test_two_columns_media_queries(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-section>
+						<mj-column><mj-text>A</mj-text></mj-column>
+						<mj-column><mj-text>B</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+
+		// each column is 50%
+		$this->assertStringContains('.mj-column-per-50 { width:50% !important; max-width: 50%; }', $html);
+	}
+
+	function test_background_color(){
+		$src = '
+			<mjml>
+				<mj-body background-color="#fafafa">
+					<mj-section>
+						<mj-column><mj-text>Hi</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('background-color:#fafafa;', $html);
+	}
+
 	function test_error(){
 		$src = '<mjml><mj-bodi></wjwl>';
 		$exception_msg = "";

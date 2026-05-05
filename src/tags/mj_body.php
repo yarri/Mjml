@@ -29,6 +29,10 @@ class MjBody extends _Tag {
 	}
 
 	function render(){
+		if(isset($this->context->globalData)){
+			$this->context->globalData->setBackgroundColor($this->getAttribute('background-color'));
+		}
+
 		return "
 			<div
 				{$this->htmlAttributes([
