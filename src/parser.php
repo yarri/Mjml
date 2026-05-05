@@ -180,18 +180,20 @@ class Parser {
 			$content = preg_replace('/^<[^>]+>/s', '', $content);
 			$content = preg_replace('/<[^>]+>$/s', '', $content);
 			// Normalize whitespace in text nodes (outside HTML tags) to match Node.js output
-			$content = preg_replace_callback(
-				'/(<[^>]*>)|([^<]+)/',
-				function($m){
-					if(isset($m[1]) && strlen($m[1]) > 0){
-						return $m[1];
-					}
-					// Normalize whitespace in text nodes
-					return preg_replace('/\s+/', ' ', $m[2]);
-				},
-				$content
-			);
-			$content = trim($content);
+			// Skip normalization for mj-raw which must preserve content exactly
+			if($tag_name !== 'mj-raw'){
+				$content = preg_replace_callback(
+					'/(<[^>]*>)|([^<]+)/',
+					function($m){
+						if(isset($m[1]) && strlen($m[1]) > 0){
+							return $m[1];
+						}
+						return preg_replace('/\s+/', ' ', $m[2]);
+					},
+					$content
+				);
+				$content = trim($content);
+			}
 			$tag_obj->content = $content;
 			$tag_obj->props["children"] = [];
 		}
