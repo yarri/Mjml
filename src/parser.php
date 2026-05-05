@@ -40,6 +40,7 @@ class Parser {
 			'preview' => $globalData->preview,
 			'fonts' => $globalData->fonts,
 			'style' => $globalData->style,
+			'headStyle' => $globalData->headStyle,
 		]);
 
 		$out = \Yarri\Mjml\Skeleton::mergeOutlookConditionals($out);
@@ -158,6 +159,11 @@ class Parser {
 		} elseif($globalData !== null){
 			// Root node: attach globalData to its fresh context
 			$tag_obj->context->globalData = $globalData;
+		}
+
+		// Register component headStyle (e.g. navbar hamburger CSS)
+		if(method_exists($tag_obj, 'headStyle') && isset($tag_obj->context->globalData)){
+			$tag_obj->context->globalData->addHeadStyle($tag_name, [$tag_obj, 'headStyle']);
 		}
 
 		// Set how many siblings this element has

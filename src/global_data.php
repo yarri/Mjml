@@ -10,9 +10,13 @@ class GlobalData {
 	public $preview = '';
 	public $fonts = [];
 	public $style = [];
-	public $headStyle = [];
+	public $headStyle = []; // map[componentName => callable($breakpoint)]
 	public $headRaw = [];
 	public $defaultAttributes = [];
+
+	function addHeadStyle($componentName, $callable){
+		$this->headStyle[$componentName] = $callable;
+	}
 
 	function addMediaQuery($className, $parsedWidth, $unit){
 		$this->mediaQueries[$className] = "{ width:{$parsedWidth}{$unit} !important; max-width: {$parsedWidth}{$unit}; }";

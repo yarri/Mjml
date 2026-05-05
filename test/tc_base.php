@@ -12,6 +12,10 @@ class TcBase extends TcSuperbase {
 		if(preg_match('/<body[^>]*>(.*?)<\/body>/si', $actual, $m)){
 			$actual = $m[1];
 		}
+		// Normalize bare & to &amp; so expat XML parser can handle HTML from mjml node.js
+		// (Node.js MJML outputs unescaped & in href attributes like ?foo=1&bar=2)
+		$expected = preg_replace('/&(?![a-zA-Z#][a-zA-Z0-9]*;)/', '&amp;', $expected);
+		$actual = preg_replace('/&(?![a-zA-Z#][a-zA-Z0-9]*;)/', '&amp;', $actual);
 		$expected = new XMole("<xml>$expected</xml>");
 		$actual = new XMole("<xml>$actual</xml>");
 		return XMole::AreSame($expected,$actual);
