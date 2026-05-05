@@ -14,6 +14,7 @@ class GlobalData {
 	public $componentsHeadStyle = []; // array of callables — per-instance (carousel, etc.)
 	public $headRaw = [];
 	public $defaultAttributes = [];
+	public $htmlAttributes = []; // map[cssSelector => [attrName => value]] from mj-html-attributes
 
 	function addHeadStyle($componentName, $callable){
 		$this->headStyle[$componentName] = $callable;

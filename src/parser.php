@@ -46,6 +46,11 @@ class Parser {
 
 		$out = \Yarri\Mjml\Skeleton::mergeOutlookConditionals($out);
 
+		// Apply mj-html-attributes: inject custom HTML attributes by CSS selector
+		if(!empty($globalData->htmlAttributes)){
+			$out = $this->_applyHtmlAttributes($out, $globalData->htmlAttributes);
+		}
+
 		return $out;
 	}
 
@@ -100,8 +105,84 @@ class Parser {
 						}
 					}
 					break;
+
+				case 'mj-html-attributes':
+					foreach($child->get_children() as $selectorEl){
+						if($selectorEl->get_root_name() !== 'mj-selector') break;
+						$selectorAttrs = $selectorEl->get_root_attributes();
+						$path = isset($selectorAttrs['path']) ? $selectorAttrs['path'] : null;
+						if(!$path) break;
+						$customAttrs = [];
+						foreach($selectorEl->get_children() as $attrEl){
+							if($attrEl->get_root_name() !== 'mj-html-attribute') break;
+							$attrDef = $attrEl->get_root_attributes();
+							$name = isset($attrDef['name']) ? $attrDef['name'] : null;
+							if(!$name) break;
+							$value = $this->_getElementContent($attrEl);
+							$customAttrs[$name] = $value;
+						}
+						if($customAttrs){
+							$globalData->htmlAttributes[$path] = array_merge(
+								isset($globalData->htmlAttributes[$path]) ? $globalData->htmlAttributes[$path] : [],
+								$customAttrs
+							);
+						}
+					}
+					break;
 			}
 		}
+	}
+
+	/**
+	 * Apply custom HTML attributes to elements matching CSS class selectors.
+	 * Supports: .classname, .class1.class2 (AND), .class1 .class2 (descendant — simplified)
+	 *
+	 * @param string $html  Full rendered HTML document
+	 * @param array  $htmlAttributes  map[cssSelector => [attrName => value]]
+	 * @return string  Modified HTML
+	 */
+	function _applyHtmlAttributes($html, $htmlAttributes){
+		$doc = new \DOMDocument();
+		libxml_use_internal_errors(true);
+		$doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+		libxml_clear_errors();
+		$xpath = new \DOMXPath($doc);
+
+		foreach($htmlAttributes as $selector => $attrs){
+			$xpathExpr = $this->_cssToXPath(trim($selector));
+			if(!$xpathExpr) continue;
+			$nodes = $xpath->query($xpathExpr);
+			if(!$nodes) continue;
+			foreach($nodes as $node){
+				foreach($attrs as $attrName => $attrValue){
+					$node->setAttribute($attrName, (string)$attrValue);
+				}
+			}
+		}
+
+		return $doc->saveHTML();
+	}
+
+	/**
+	 * Convert a simple CSS selector to XPath expression.
+	 * Supports: .class, .class1.class2 (AND), .a .b (descendant)
+	 */
+	function _cssToXPath($selector){
+		// Handle descendant selectors: ".a .b" → //*[...a...]//*[...b...]
+		$parts = preg_split('/\s+/', $selector);
+		$xpathParts = [];
+		foreach($parts as $part){
+			if(!strlen($part)) continue;
+			// Parse class conditions from e.g. ".foo.bar"
+			$classes = array_filter(explode('.', $part));
+			if(empty($classes)) continue;
+			$conditions = array_map(function($cls){
+				return "contains(concat(' ', normalize-space(@class), ' '), ' {$cls} ')";
+			}, $classes);
+			$xpathParts[] = '//*[' . implode(' and ', $conditions) . ']';
+		}
+		if(empty($xpathParts)) return null;
+		return implode('', $xpathParts);
 	}
 
 	/**

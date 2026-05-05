@@ -143,6 +143,27 @@ class TcMjmlHead extends TcBase {
 		$this->assertStringNotContains('color:#333333;', $html);
 	}
 
+	function test_html_attributes(){
+		$src = '
+			<mjml>
+				<mj-head>
+					<mj-html-attributes>
+						<mj-selector path=".custom-section">
+							<mj-html-attribute name="data-tracking">newsletter</mj-html-attribute>
+						</mj-selector>
+					</mj-html-attributes>
+				</mj-head>
+				<mj-body>
+					<mj-section css-class="custom-section">
+						<mj-column><mj-text>Hello</mj-text></mj-column>
+					</mj-section>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('data-tracking="newsletter"', $html);
+	}
+
 	function test_attributes_mj_all(){
 		$src = '
 			<mjml>
