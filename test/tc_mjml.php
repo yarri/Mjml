@@ -1,26 +1,6 @@
 <?php
 class TcMjml extends TcBase {
 
-	function test_error(){
-		$src = '<mjml><mj-bodi></wjwl>';
-		$exception_msg = "";
-		try {
-			$html = Yarri\Mjml::Mjml2Html($src);
-		}catch(Exception $e){
-			$exception_msg = $e->getMessage();
-		}
-		$this->assertContains("Malformed MJML. XML parser error (76): Mismatched tag on line 1",$exception_msg);
-
-		$src = '<mjml></mjml>';
-		$exception_msg = "";
-		try {
-			$html = Yarri\Mjml::Mjml2Html($src);
-		}catch(Exception $e){
-			$exception_msg = $e->getMessage();
-		}
-		$this->assertContains("Malformed MJML. Element /mjml/mj-body not found.",$exception_msg);
-	}
-
 	function test(){
 		$src = '
 			<mjml>
@@ -38,11 +18,31 @@ class TcMjml extends TcBase {
 			</mjml>
 		';
 
-		echo $this->_mjml_node($src),"\n\n";
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$html_node = $this->_mjml_node($src);
 
-		echo Yarri\Mjml::Mjml2Html($src);
+		$this->assertHtmlEquals($html_node,$html);
+	}
 
-		exit;
+
+	function test_error(){
+		$src = '<mjml><mj-bodi></wjwl>';
+		$exception_msg = "";
+		try {
+			$html = Yarri\Mjml::Mjml2Html($src);
+		}catch(Exception $e){
+			$exception_msg = $e->getMessage();
+		}
+		$this->assertStringContains("Malformed MJML. XML parser error (76): Mismatched tag on line 1",$exception_msg);
+
+		$src = '<mjml></mjml>';
+		$exception_msg = "";
+		try {
+			$html = Yarri\Mjml::Mjml2Html($src);
+		}catch(Exception $e){
+			$exception_msg = $e->getMessage();
+		}
+		$this->assertStringContains("Malformed MJML. Element /mjml/mj-body not found.",$exception_msg);
 	}
 
 	function test_node(){
@@ -73,22 +73,5 @@ class TcMjml extends TcBase {
 
 		$this->assertEquals(0,$retval);
 		$this->assertTrue(strlen($output)>0);
-	}
-
-	function _mjml_node($src){
-		$tmpfile = Files::WriteToTemp($src);
-
-		$cmd = "./node_modules/mjml/bin/mjml $tmpfile";
-		$output = null;
-		$retval = null;
-		exec($cmd,$output,$retval);
-		$output = join("\n",$output);
-
-		Files::Unlink($tmpfile);
-
-		$this->assertEquals(0,$retval);
-		$this->assertTrue(strlen($output)>0);
-
-		return $output;
 	}
 }
