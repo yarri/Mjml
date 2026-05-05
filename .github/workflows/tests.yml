@@ -32,8 +32,16 @@ jobs:
           extensions: mbstring
           tools: composer
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.20.2"
+
       - name: Install dependencies
         run: composer update
+
+      - name: Install JS dependencies
+        run: npm install
 
       - name: Run tests
         run: cd test && ../vendor/bin/run_unit_tests

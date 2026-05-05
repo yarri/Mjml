@@ -24,7 +24,7 @@ class TcBase extends TcSuperbase {
 	function _mjml_node($src){
 		$tmpfile = Files::WriteToTemp($src);
 
-		$cmd = "./node_modules/mjml/bin/mjml $tmpfile";
+		$cmd = __DIR__ . "/../node_modules/mjml/bin/mjml $tmpfile";
 		$output = null;
 		$retval = null;
 		exec($cmd,$output,$retval);
