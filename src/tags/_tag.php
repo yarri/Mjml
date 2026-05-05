@@ -15,6 +15,12 @@ class _Tag {
 		"nonRawSiblings" => [],
 	];
 
+	public $content;
+
+	public $attributes;
+
+	public $context;
+
 	function __construct($params = []){
 		$params += [
 			"content" => "",
@@ -26,7 +32,9 @@ class _Tag {
 		$this->content = $params["content"];
 		$this->attributes = $params["attributes"];
 
-		$context = new class{ };
+		$context = new class{
+			public $containerWidth;
+		};
 		$context->containerWidth = 300;
 		$this->context = $context;
 	}
@@ -85,7 +93,7 @@ class _Tag {
 
 	function suffixCssClasses($classes, $suffix){
 		$out = [];
-		foreach(explode(' ',$classes) as $c){
+		foreach(explode(' ',(string)$classes) as $c){
 			if(!strlen($c)){ continue; }
 			$out[] = "$c-$suffix";
 		}
