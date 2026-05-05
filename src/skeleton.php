@@ -11,18 +11,23 @@ class Skeleton {
 			'fonts' => [],
 			'mediaQueries' => [],
 			'preview' => '',
+			'style' => [],
 			'title' => '',
 		];
 
 		$backgroundColor = $options['backgroundColor'];
 		$breakpoint = $options['breakpoint'];
 		$content = $options['content'];
+		$fonts = $options['fonts'];
 		$mediaQueries = $options['mediaQueries'];
 		$preview = $options['preview'];
+		$style = $options['style'];
 		$title = $options['title'];
 
+		$fontsTags = self::buildFontsTags($content, $fonts);
 		$mediaQueriesTags = self::buildMediaQueriesTags($breakpoint, $mediaQueries);
 		$previewHtml = self::buildPreview($preview);
+		$customStyle = $style ? join("\n    ", $style) : '';
 		$bodyStyle = 'word-spacing:normal;' . ($backgroundColor ? "background-color:{$backgroundColor};" : '');
 
 		return <<<HTML
@@ -59,10 +64,12 @@ class Skeleton {
       .mj-outlook-group-fix { width:100% !important; }
     </style>
     <![endif]-->
+    {$fontsTags}
     {$mediaQueriesTags}
     <style type="text/css">
     </style>
     <style type="text/css">
+    {$customStyle}
     </style>
   </head>
   <body style="{$bodyStyle}">
@@ -70,6 +77,38 @@ class Skeleton {
     {$content}
   </body>
 </html>
+HTML;
+	}
+
+	static function buildFontsTags($content, $fonts){
+		if(empty($fonts)){ return ''; }
+
+		$toImport = [];
+		foreach($fonts as $name => $url){
+			$nameQ = preg_quote($name, '/');
+			// Check if font is used in a font-family style attribute value
+			if(preg_match('/"[^"]*font-family:[^"]*' . $nameQ . '[^"]*"/im', $content)){
+				$toImport[] = $url;
+			}
+		}
+
+		if(empty($toImport)){ return ''; }
+
+		$links = join("\n        ", array_map(function($url){
+			return "<link href=\"{$url}\" rel=\"stylesheet\" type=\"text/css\">";
+		}, $toImport));
+		$imports = join("\n          ", array_map(function($url){
+			return "@import url({$url});";
+		}, $toImport));
+
+		return <<<HTML
+
+    <!--[if !mso]><!-->
+      {$links}
+      <style type="text/css">
+        {$imports}
+      </style>
+    <!--<![endif]-->
 HTML;
 	}
 

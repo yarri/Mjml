@@ -9,8 +9,10 @@ class GlobalData {
 	public $title = '';
 	public $preview = '';
 	public $fonts = [];
+	public $style = [];
 	public $headStyle = [];
 	public $headRaw = [];
+	public $defaultAttributes = [];
 
 	function addMediaQuery($className, $parsedWidth, $unit){
 		$this->mediaQueries[$className] = "{ width:{$parsedWidth}{$unit} !important; max-width: {$parsedWidth}{$unit}; }";

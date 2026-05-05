@@ -13,6 +13,7 @@ class Parser {
 
 	function parse(){
 		$globalData = new \Yarri\Mjml\GlobalData();
+		$this->_processHead($this->head, $globalData);
 		$body_tag = $this->_buildTag($this->body, null, 1, $globalData);
 		$out = $body_tag->render();
 
@@ -38,11 +39,77 @@ class Parser {
 			'title' => $globalData->title,
 			'preview' => $globalData->preview,
 			'fonts' => $globalData->fonts,
+			'style' => $globalData->style,
 		]);
 
 		$out = \Yarri\Mjml\Skeleton::mergeOutlookConditionals($out);
 
 		return $out;
+	}
+
+	/**
+	 * Process mj-head children and populate globalData.
+	 */
+	function _processHead(\XMole $head, \Yarri\Mjml\GlobalData $globalData){
+		foreach($head->get_children() as $child){
+			$tag_name = $child->get_root_name();
+			$attrs = $child->get_root_attributes();
+
+			switch($tag_name){
+				case 'mj-title':
+					$globalData->title = trim($this->_getElementContent($child));
+					break;
+
+				case 'mj-preview':
+					$globalData->preview = trim($this->_getElementContent($child));
+					break;
+
+				case 'mj-font':
+					if(isset($attrs['name']) && isset($attrs['href'])){
+						$globalData->fonts[$attrs['name']] = $attrs['href'];
+					}
+					break;
+
+				case 'mj-breakpoint':
+					if(isset($attrs['width'])){
+						$globalData->breakpoint = $attrs['width'];
+					}
+					break;
+
+				case 'mj-style':
+					$css = $this->_getElementContent($child);
+					$globalData->style[] = $css;
+					break;
+
+				case 'mj-attributes':
+					foreach($child->get_children() as $attrChild){
+						$childTag = $attrChild->get_root_name();
+						$childAttrs = $attrChild->get_root_attributes();
+						if($childTag === 'mj-all'){
+							$globalData->defaultAttributes['mj-all'] = array_merge(
+								isset($globalData->defaultAttributes['mj-all']) ? $globalData->defaultAttributes['mj-all'] : [],
+								$childAttrs
+							);
+						}else{
+							$globalData->defaultAttributes[$childTag] = array_merge(
+								isset($globalData->defaultAttributes[$childTag]) ? $globalData->defaultAttributes[$childTag] : [],
+								$childAttrs
+							);
+						}
+					}
+					break;
+			}
+		}
+	}
+
+	/**
+	 * Extract inner text/HTML content from an XMole element (strips the outer tag).
+	 */
+	function _getElementContent(\XMole $element){
+		$content = (string)$element;
+		$content = preg_replace('/^<[^>]+>/s', '', $content);
+		$content = preg_replace('/<[^>]+>$/s', '', $content);
+		return $content;
 	}
 
 	/**
@@ -56,6 +123,18 @@ class Parser {
 	function _buildTag(\XMole $element, $context = null, $nonRawSiblings = 1, $globalData = null){
 		$tag_name = $element->get_root_name();
 		$attributes = $element->get_root_attributes();
+
+		// Apply global default attributes from mj-attributes (explicit attrs take precedence)
+		if($globalData !== null){
+			$globalAttrs = isset($globalData->defaultAttributes['mj-all']) ? $globalData->defaultAttributes['mj-all'] : [];
+			$tagAttrs = isset($globalData->defaultAttributes[$tag_name]) ? $globalData->defaultAttributes[$tag_name] : [];
+			$attributes = array_merge($globalAttrs, $tagAttrs, $attributes);
+		} elseif($context !== null && isset($context->globalData)){
+			$gd = $context->globalData;
+			$globalAttrs = isset($gd->defaultAttributes['mj-all']) ? $gd->defaultAttributes['mj-all'] : [];
+			$tagAttrs = isset($gd->defaultAttributes[$tag_name]) ? $gd->defaultAttributes[$tag_name] : [];
+			$attributes = array_merge($globalAttrs, $tagAttrs, $attributes);
+		}
 
 		// Find mj-* children
 		$children_elements = $element->get_children();
