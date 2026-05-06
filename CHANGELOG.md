@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to Yarri\Mjml will be documented in this file.
 
+## [0.1.3] 2026-05-06
+
+* fb318cc - Survive malformed HTML in mj-text and other content tags
+
 ## [0.1.2] 2026-05-06
 
 * 1f50d71 - Add mj-class support in mj-attributes
