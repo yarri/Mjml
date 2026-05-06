@@ -82,11 +82,21 @@ $html = Yarri\Mjml::Mjml2Html($mjml);
 The test suite compares output against the reference Node.js MJML 4.13.0 implementation. Install Node.js dependencies first:
 
 ```bash
+nvm use
 npm install
 ```
 
 Then run the tests:
 
 ```bash
-./vendor/bin/run_unit_tests test/
+cd test/
+../vendor/bin/run_unit_tests
+```
+
+Run a single test case:
+
+```bash
+cd test/
+../vendor/bin/run_unit_tests tc_mj_column.php
+
 ```
