@@ -1,7 +1,7 @@
 {
         "name": "yarri/mjml",
         "type": "library",
-        "description": "",
+        "description": "PHP implementation of the MJML email templating language",
         "keywords": [],
         "homepage": "https://github.com/yarri/",
         "license": ["MIT"],
@@ -13,8 +13,7 @@
         ],
         "require": {
                 "php": ">=7.1",
-                "atk14/functions": "*",
-                "atk14/string4": "*",
+                "atk14/string4": "^0.6",
                 "atk14/xmole": "^1.0"
         },
         "require-dev": {

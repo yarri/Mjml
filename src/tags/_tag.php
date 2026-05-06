@@ -1,6 +1,8 @@
 <?php
 namespace Yarri\Mjml\Tags;
 
+use Yarri\Mjml\Utils;
+
 class _Tag {
 
 	static $componentName;
@@ -54,10 +56,10 @@ class _Tag {
 		foreach($attributes as $key => $value){
 			if(is_null($value)){ continue; }
 			if($key === "style"){
-				$out[] = \h($key).'="'.\h($this->styles($value)).'"';
+				$out[] = Utils::h($key).'="'.Utils::h($this->styles($value)).'"';
 				continue;
 			}
-			$out[] = \h($key).'="'.\h($value).'"';
+			$out[] = Utils::h($key).'="'.Utils::h($value).'"';
 		}
 		return join(" ",$out);
 	}
