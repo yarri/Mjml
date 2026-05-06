@@ -23,7 +23,7 @@ class Mjml {
 				$replaces_for_malformations[$replacement_key] = $content;
 				return "$matches[1]$replacement_key$matches[4]";
 			},
-			$mjml,
+			$mjml
 		);
 
 		$xmole = new \XMole($mjml,["trim_data" => false]);
