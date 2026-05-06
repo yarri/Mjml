@@ -1,5 +1,5 @@
 <?php
-class TcIssueMjClass extends TcBase {
+class TcMjClass extends TcBase {
 
 	function test_basic(){
 		$src = '
