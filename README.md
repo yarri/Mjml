@@ -1,5 +1,7 @@
 # yarri/mjml
 
+[![Tests](https://github.com/yarri/Mjml/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/yarri/Mjml/actions/workflows/tests.yml)
+
 PHP implementation of the [MJML](https://mjml.io/) email templating language. Converts MJML markup into responsive HTML emails — without Node.js at runtime.
 
 ## Requirements
