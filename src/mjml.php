@@ -20,6 +20,13 @@ class Mjml {
 
 				$replacement_key = "mj-text-content-$i-$uniqid";
 				$i++;
+
+				// Count of lines
+				$lines_count = count(explode("\n",$content));
+
+				// To preserve the content line height
+				$replacement_key .= str_repeat("\n.",$lines_count-1);
+
 				$replaces_for_malformations[$replacement_key] = $content;
 				return "$matches[1]$replacement_key$matches[4]";
 			},
