@@ -97,6 +97,15 @@ class Parser {
 								isset($globalData->defaultAttributes['mj-all']) ? $globalData->defaultAttributes['mj-all'] : [],
 								$childAttrs
 							);
+						}elseif($childTag === 'mj-class'){
+							$className = isset($childAttrs['name']) ? $childAttrs['name'] : null;
+							if($className){
+								unset($childAttrs['name']);
+								$globalData->classAttributes[$className] = array_merge(
+									isset($globalData->classAttributes[$className]) ? $globalData->classAttributes[$className] : [],
+									$childAttrs
+								);
+							}
 						}else{
 							$globalData->defaultAttributes[$childTag] = array_merge(
 								isset($globalData->defaultAttributes[$childTag]) ? $globalData->defaultAttributes[$childTag] : [],
@@ -208,15 +217,21 @@ class Parser {
 		$attributes = $element->get_root_attributes();
 
 		// Apply global default attributes from mj-attributes (explicit attrs take precedence)
-		if($globalData !== null){
-			$globalAttrs = isset($globalData->defaultAttributes['mj-all']) ? $globalData->defaultAttributes['mj-all'] : [];
-			$tagAttrs = isset($globalData->defaultAttributes[$tag_name]) ? $globalData->defaultAttributes[$tag_name] : [];
-			$attributes = array_merge($globalAttrs, $tagAttrs, $attributes);
-		} elseif($context !== null && isset($context->globalData)){
-			$gd = $context->globalData;
+		// Priority: mj-all < mj-class < component-type defaults < explicit attributes
+		$gd = $globalData !== null ? $globalData : ($context !== null && isset($context->globalData) ? $context->globalData : null);
+		if($gd !== null){
 			$globalAttrs = isset($gd->defaultAttributes['mj-all']) ? $gd->defaultAttributes['mj-all'] : [];
 			$tagAttrs = isset($gd->defaultAttributes[$tag_name]) ? $gd->defaultAttributes[$tag_name] : [];
-			$attributes = array_merge($globalAttrs, $tagAttrs, $attributes);
+			$classAttrs = [];
+			if(isset($attributes['mj-class'])){
+				foreach(preg_split('/\s+/', trim($attributes['mj-class'])) as $cls){
+					if($cls !== '' && isset($gd->classAttributes[$cls])){
+						$classAttrs = array_merge($classAttrs, $gd->classAttributes[$cls]);
+					}
+				}
+			}
+			$attributes = array_merge($globalAttrs, $tagAttrs, $classAttrs, $attributes);
+			unset($attributes['mj-class']);
 		}
 
 		// Find mj-* children
