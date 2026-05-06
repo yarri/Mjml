@@ -13,7 +13,7 @@
         ],
         "require": {
                 "php": ">=7.1",
-                "atk14/string4": "^0.6",
+                "atk14/string4": "^5.7|^0.6",
                 "atk14/xmole": "^1.0"
         },
         "require-dev": {
