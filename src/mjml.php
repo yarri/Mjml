@@ -26,8 +26,10 @@ class Mjml {
 
 				// To preserve the content line height
 				$replacement_key .= str_repeat("\n.",$lines_count-1);
+				$replacement_key_alt = str_replace("\n"," ",$replacement_key); // Some MJML tags "normalize" the innert text (i.e. "\n" -> " ")
 
 				$replaces_for_malformations[$replacement_key] = $content;
+				$replaces_for_malformations[$replacement_key_alt] = $content;
 				return "$matches[1]$replacement_key$matches[4]";
 			},
 			$mjml
