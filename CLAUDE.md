@@ -1,6 +1,6 @@
 # CLAUDE.md — yarri/mjml
 
-PHP port of the [MJML 4.13.0](https://mjml.io/) email templating library. Converts MJML markup to responsive HTML email — without Node.js at runtime. Node.js is used only in tests (to compare output against the reference implementation).
+PHP port of the [MJML 4.18.0](https://mjml.io/) email templating library. Converts MJML markup to responsive HTML email — without Node.js at runtime. Node.js is used only in tests (to compare output against the reference implementation).
 
 ## Spuštění testů
 
@@ -84,8 +84,18 @@ Regex v `mjml.php` musí správně přeskočit self-closing tagy (`<mj-text />`)
 
 ### Náhodná ID a testovací normalizace
 Komponenty generující náhodná ID při porovnávání s Node.js vyžadují normalizaci v `test/tc_base.php::_compare_html()`:
-- **Carousel**: `bin2hex(random_bytes(6))` → 12 hex znaků v názvech tříd a atributech. Regex: `carousel-(?:[a-z]+-)*[0-9a-f]{12}` → `carousel-ID`
+- **Carousel**: PHP generuje 12-znakové ID (`bin2hex(random_bytes(6))`), Node.js generuje 16-znakové ID (`genRandomHexString(16)`). Regex: `carousel-(?:[a-z]+-)*[0-9a-f]{12,16}` → `carousel-ID`
 - **Navbar**: 16-znakový hex klíč v `id=` a `for=` atributech. Regex: `[0-9a-f]{16}` uvnitř těchto atributů → `MENU-KEY`
+
+### Změny oproti MJML 4.13.0 (implementované pro 4.18.0)
+
+- **mj-body**: `aria-label` z `<mj-title>` se přidává na wrapper `<div>` těla (`$this->context->globalData->title`).
+- **mj-section**: `border-radius` přesunut z `table` stylu na `td` styl; při nastaveném `border-radius` se přidá `border-collapse: separate` na `table` a `overflow: hidden` na `div`.
+- **mj-column**: při nastaveném `border-radius` nebo `inner-border-radius` se přidá `border-collapse: separate` na outer table v `renderGutter()`; `vertical-align` HTML atribut odstraněn z inner `<td>` ve `renderColumn()`.
+- **mj-hero**: v `fixed-height` režimu se výška zapisuje také do CSS stylu (`height: Xpx`), nejen jako HTML atribut.
+- **mj-social-element**: atribut `height` odstraněn z `<img>`; přidán `text-align` do stylu `tdText`; `alt=""` je výchozí hodnota.
+- **mj-social**: propagace atributů z rodiče do `mj-social-element` přeskočí `null` hodnoty (jinak by přepisovala výchozí hodnoty elementu).
+- **mj-accordion**: `font-family` se propaguje přes context (`accordionFontFamily`), ne přes childrenAttrs — aby se nedostal na `<label>` element. `mj-accordion-element` propaguje dál jako `elementFontFamily`. `mj-accordion-title` a `mj-accordion-text` používají `resolveFontFamily()` s pořadím: vlastní atribut → elementFontFamily → accordionFontFamily.
 
 ### Replikované bugy z JS
 Některé chování PHP záměrně replikuje bugy Node.js implementace, aby výstup byl identický:
@@ -107,4 +117,4 @@ Některé chování PHP záměrně replikuje bugy Node.js implementace, aby výs
 ## Závislosti
 
 - `atk14/xmole` — XML parser (expat) používaný jak v produkci (parsování MJML), tak v testech (porovnávání HTML)
-- Node.js `mjml@4.13.0` — pouze pro testy (dev dependency)
+- Node.js `mjml@4.18.0` — pouze pro testy (dev dependency)
