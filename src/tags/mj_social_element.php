@@ -39,6 +39,7 @@ class MjSocialElement extends _Tag {
 
 	static $defaultAttributes = [
 		'align' => 'left',
+		'alt' => '',
 		'color' => '#000',
 		'border-radius' => '3px',
 		'font-family' => 'Ubuntu, Helvetica, Arial, sans-serif',
@@ -146,6 +147,7 @@ class MjSocialElement extends _Tag {
 			'tdText' => [
 				'vertical-align' => 'middle',
 				'padding' => $this->getAttribute('text-padding'),
+				'text-align' => $this->getAttribute('align'),
 			],
 			'text' => [
 				'color' => $this->getAttribute('color'),
@@ -170,7 +172,6 @@ class MjSocialElement extends _Tag {
 		$imgAttrs = $this->htmlAttributes([
 			'alt' => $this->getAttribute('alt'),
 			'title' => $this->getAttribute('title'),
-			'height' => (int)($iconHeight ?: $iconSize),
 			'src' => $src,
 			'style' => 'img',
 			'width' => (int)$iconSize,

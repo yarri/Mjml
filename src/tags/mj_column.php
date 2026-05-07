@@ -66,7 +66,20 @@ class MjColumn extends _Tag {
 		return $context;
 	}
 
+	function hasBorderRadius(){
+		$borderRadius = $this->getAttribute('border-radius');
+		return $borderRadius !== '' && !is_null($borderRadius);
+	}
+
+	function hasInnerBorderRadius(){
+		$innerBorderRadius = $this->getAttribute('inner-border-radius');
+		return $innerBorderRadius !== '' && !is_null($innerBorderRadius);
+	}
+
 	function getStyles(){
+		$hasBorderRadius = $this->hasBorderRadius();
+		$hasInnerBorderRadius = $this->hasInnerBorderRadius();
+
 		$tableStyle = [
 			'background-color' => $this->getAttribute('background-color'),
 			'border' => $this->getAttribute('border'),
@@ -77,6 +90,22 @@ class MjColumn extends _Tag {
 			'border-top' => $this->getAttribute('border-top'),
 			'vertical-align' => $this->getAttribute('vertical-align')
 		];
+		if($hasBorderRadius){
+			$tableStyle['border-collapse'] = 'separate';
+		}
+
+		$gutterTableStyle = [
+			'background-color' => $this->getAttribute('inner-background-color'),
+			'border' => $this->getAttribute('inner-border'),
+			'border-bottom' => $this->getAttribute('inner-border-bottom'),
+			'border-left' => $this->getAttribute('inner-border-left'),
+			'border-radius' => $this->getAttribute('inner-border-radius'),
+			'border-right' => $this->getAttribute('inner-border-right'),
+			'border-top' => $this->getAttribute('inner-border-top')
+		];
+		if($hasInnerBorderRadius){
+			$gutterTableStyle['border-collapse'] = 'separate';
+		}
 
 		return [
 			'div' => [
@@ -87,15 +116,7 @@ class MjColumn extends _Tag {
 				'vertical-align' => $this->getAttribute('vertical-align'),
 				'width' => $this->getMobileWidth()
 			],
-			'table' => $this->hasGutter() ? [
-				'background-color' => $this->getAttribute('inner-background-color'),
-				'border' => $this->getAttribute('inner-border'),
-				'border-bottom' => $this->getAttribute('inner-border-bottom'),
-				'border-left' => $this->getAttribute('inner-border-left'),
-				'border-radius' => $this->getAttribute('inner-border-radius'),
-				'border-right' => $this->getAttribute('inner-border-right'),
-				'border-top' => $this->getAttribute('inner-border-top')
-			] : $tableStyle,
+			'table' => $this->hasGutter() ? $gutterTableStyle : $tableStyle,
 			'tdOutlook' => [
 				'vertical-align' => $this->getAttribute('vertical-align'),
 				'width' => $this->getWidthAsPixel()
@@ -199,18 +220,18 @@ class MjColumn extends _Tag {
 	}
 
 	function renderGutter(){
+		$hasBorderRadius = $this->hasBorderRadius();
 		$tdAttrs = $this->htmlAttributes(['style' => 'gutter']);
 		$columnContent = $this->renderColumn();
 
+		$outerTableAttrs = ['border' => '0', 'cellpadding' => '0', 'cellspacing' => '0', 'role' => 'presentation', 'width' => '100%'];
+		if($hasBorderRadius){
+			$outerTableAttrs['style'] = ['border-collapse' => 'separate'];
+		}
+
 		return "
 		<table
-			{$this->htmlAttributes([
-				'border' => '0',
-				'cellpadding' => '0',
-				'cellspacing' => '0',
-				'role' => 'presentation',
-				'width' => '100%'
-			])}
+			{$this->htmlAttributes($outerTableAttrs)}
 		>
 			<tbody>
 				<tr>
@@ -236,7 +257,6 @@ class MjColumn extends _Tag {
 		$renderedChildren = $this->renderChildren(function($component){
 			$tdAttrs = $component->htmlAttributes([
 				'align' => $component->getAttribute('align'),
-				'vertical-align' => $component->getAttribute('vertical-align'),
 				'class' => $component->getAttribute('css-class'),
 				'style' => [
 					'background' => $component->getAttribute('container-background-color'),

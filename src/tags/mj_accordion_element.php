@@ -37,6 +37,12 @@ class MjAccordionElement extends _Tag {
 		];
 	}
 
+	function getChildContext(){
+		$context = clone $this->context;
+		$context->elementFontFamily = $this->getAttribute('font-family');
+		return $context;
+	}
+
 	function handleMissingChildren($childrenAttrs){
 		$children = $this->props['children'];
 		$hasTitle = false;
@@ -70,7 +76,7 @@ class MjAccordionElement extends _Tag {
 
 	function render(){
 		$childrenAttrs = [];
-		foreach(['border', 'icon-align', 'icon-width', 'icon-height', 'icon-position', 'icon-wrapped-url', 'icon-wrapped-alt', 'icon-unwrapped-url', 'icon-unwrapped-alt'] as $attr){
+		foreach(['border', 'font-family', 'icon-align', 'icon-width', 'icon-height', 'icon-position', 'icon-wrapped-url', 'icon-wrapped-alt', 'icon-unwrapped-url', 'icon-unwrapped-alt'] as $attr){
 			$childrenAttrs[$attr] = $this->getAttribute($attr);
 		}
 

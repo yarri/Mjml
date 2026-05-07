@@ -24,6 +24,14 @@ class MjAccordionTitle extends _Tag {
 		'padding' => '16px',
 	];
 
+	function resolveFontFamily(){
+		$own = $this->getAttribute('font-family');
+		if(!is_null($own) && $own !== '') return $own;
+		if(isset($this->context->elementFontFamily) && (string)$this->context->elementFontFamily !== '') return $this->context->elementFontFamily;
+		if(isset($this->context->accordionFontFamily) && (string)$this->context->accordionFontFamily !== '') return $this->context->accordionFontFamily;
+		return null;
+	}
+
 	function getStyles(){
 		return [
 			'td' => [
@@ -31,7 +39,7 @@ class MjAccordionTitle extends _Tag {
 				'background-color' => $this->getAttribute('background-color'),
 				'color' => $this->getAttribute('color'),
 				'font-size' => $this->getAttribute('font-size'),
-				'font-family' => $this->getAttribute('font-family'),
+				'font-family' => $this->resolveFontFamily(),
 				'padding-bottom' => $this->getAttribute('padding-bottom'),
 				'padding-left' => $this->getAttribute('padding-left'),
 				'padding-right' => $this->getAttribute('padding-right'),
@@ -93,8 +101,8 @@ class MjAccordionTitle extends _Tag {
 
 	function render(){
 		$tableAttrs = $this->htmlAttributes([
-			'cell-spacing' => '0',
-			'cell-padding' => '0',
+			'cellspacing' => '0',
+			'cellpadding' => '0',
 			'style' => 'table',
 		]);
 

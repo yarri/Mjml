@@ -73,6 +73,12 @@ class MjAccordion extends _Tag {
 		];
 	}
 
+	function getChildContext(){
+		$context = clone $this->context;
+		$context->accordionFontFamily = $this->getAttribute('font-family');
+		return $context;
+	}
+
 	function render(){
 		$childrenAttrs = [];
 		foreach(['border', 'icon-align', 'icon-width', 'icon-height', 'icon-position', 'icon-wrapped-url', 'icon-wrapped-alt', 'icon-unwrapped-url', 'icon-unwrapped-alt'] as $attr){
@@ -85,8 +91,8 @@ class MjAccordion extends _Tag {
 		});
 
 		$tableAttrs = $this->htmlAttributes([
-			'cell-spacing' => '0',
-			'cell-padding' => '0',
+			'cellspacing' => '0',
+			'cellpadding' => '0',
 			'class' => 'mj-accordion',
 			'style' => 'table',
 		]);

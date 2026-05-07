@@ -40,6 +40,11 @@ class MjSection extends _Tag {
 		'text-padding' => '4px 4px 4px 0'
 	];
 
+	function hasBorderRadius(){
+		$borderRadius = $this->getAttribute('border-radius');
+		return $borderRadius !== '' && !is_null($borderRadius);
+	}
+
 	function getChildContext(){
 		$ar = $this->getBoxWidths();
 		$box = $ar['box'];
@@ -51,6 +56,7 @@ class MjSection extends _Tag {
 	function getStyles(){
 		$containerWidth = $this->context->containerWidth;
 		$fullWidth = $this->isFullWidth();
+		$hasBorderRadius = $this->hasBorderRadius();
 
 		$background = $this->getAttribute('background-url') ? [
 			'background' => $this->getBackground(),
@@ -62,21 +68,32 @@ class MjSection extends _Tag {
 			'background-color' => $this->getAttribute('background-color')
 		];
 
+		$tableStyle = ($fullWidth ? [] : $background) + ['width' => '100%'];
+		if($hasBorderRadius){
+			$tableStyle['border-collapse'] = 'separate';
+		}
+
+		$divStyle = ($fullWidth ? [] : $background) + [
+			'margin' => '0px auto',
+			'max-width' => $containerWidth,
+			'border-radius' => $this->getAttribute('border-radius')
+		];
+		if($hasBorderRadius){
+			$divStyle['overflow'] = 'hidden';
+		}
+
 		return [
 			'tableFullwidth' => ($fullWidth ? $background : []) + [
-				'width' => '100%',
-				'border-radius' => $this->getAttribute('border-radius')
+				'width' => '100%'
 			],
-			'table' => ($fullWidth ? [] : $background) + [
-				'width' => '100%',
-				'border-radius' => $this->getAttribute('border-radius')
-			],
+			'table' => $tableStyle,
 			'td' => [
 				'border' => $this->getAttribute('border'),
 				'border-bottom' => $this->getAttribute('border-bottom'),
 				'border-left' => $this->getAttribute('border-left'),
 				'border-right' => $this->getAttribute('border-right'),
 				'border-top' => $this->getAttribute('border-top'),
+				'border-radius' => $this->getAttribute('border-radius'),
 				'direction' => $this->getAttribute('direction'),
 				'font-size' => '0px',
 				'padding' => $this->getAttribute('padding'),
@@ -86,11 +103,7 @@ class MjSection extends _Tag {
 				'padding-top' => $this->getAttribute('padding-top'),
 				'text-align' => $this->getAttribute('text-align')
 			],
-			'div' => ($fullWidth ? [] : $background) + [
-				'margin' => '0px auto',
-				'border-radius' => $this->getAttribute('border-radius'),
-				'max-width' => $containerWidth
-			],
+			'div' => $divStyle,
 			'innerDiv' => [
 				'line-height' => '0',
 				'font-size' => '0'
