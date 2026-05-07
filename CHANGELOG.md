@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to Yarri\Mjml will be documented in this file.
 
+## [0.2] 2026-05-07
+
+* Implemented all changes from the original MJML to version 4.18.0
+
 ## [0.1.5] 2026-05-07
 
 * c01bd1d - Fix backward replacement of malformations
