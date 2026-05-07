@@ -242,7 +242,7 @@ class Parser {
 		$children_elements = array_values($children_elements);
 
 		// Instantiate tag object
-		$tag_class = \String4::ToObject($tag_name)->replace('-', '_')->camelize()->toString();
+		$tag_class = Utils::camelize(str_replace('-', '_', $tag_name));
 		$tag_class = "Yarri\\Mjml\\Tags\\$tag_class";
 
 		$tag_obj = new $tag_class([

@@ -5,6 +5,14 @@ class Utils {
 
 	
 	/**
+	 * Converts underscore_separated or hyphen-separated string to CamelCase.
+	 * e.g. mj-accordion-text → MjAccordionText
+	 */
+	static function camelize($str){
+		return str_replace(' ', '', ucwords(str_replace('_', ' ', $str)));
+	}
+
+	/**
 	 * A better "alias" for htmlspecialchars()
 	 *
 	 * Taken from the ATK14 Framework
