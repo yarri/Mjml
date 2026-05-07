@@ -91,14 +91,11 @@ npm install
 Then run the tests:
 
 ```bash
-cd test/
-../vendor/bin/run_unit_tests
+./vendor/bin/run_unit_tests test/
 ```
 
 Run a single test case:
 
 ```bash
-cd test/
-../vendor/bin/run_unit_tests tc_mj_column.php
-
+./vendor/bin/run_unit_tests test/tc_mj_column.php
 ```
