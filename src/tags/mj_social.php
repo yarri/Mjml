@@ -77,7 +77,7 @@ class MjSocial extends _Tag {
 		$wrappedChildren = $this->renderChildren(function($component) use ($align, $parentAttrs, $social){
 			// Apply parent attrs as defaults (don't override explicitly set child attrs)
 			foreach($parentAttrs as $attr => $val){
-				if(!isset($component->attributes[$attr]) || is_null($component->attributes[$attr])){
+				if(!is_null($val) && (!isset($component->attributes[$attr]) || is_null($component->attributes[$attr]))){
 					$component->attributes[$attr] = $val;
 				}
 			}
@@ -123,7 +123,7 @@ class MjSocial extends _Tag {
 
 		$renderedChildren = $this->renderChildren(function($component) use ($parentAttrs){
 			foreach($parentAttrs as $attr => $val){
-				if(!isset($component->attributes[$attr]) || is_null($component->attributes[$attr])){
+				if(!is_null($val) && (!isset($component->attributes[$attr]) || is_null($component->attributes[$attr]))){
 					$component->attributes[$attr] = $val;
 				}
 			}

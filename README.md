@@ -81,7 +81,7 @@ $html = Yarri\Mjml::Mjml2Html($mjml);
 
 ## Testing
 
-The test suite compares output against the reference Node.js MJML 4.13.0 implementation. Install Node.js dependencies first:
+The test suite compares output against the reference Node.js MJML 4.18.0 implementation. Install Node.js dependencies first:
 
 ```bash
 nvm use

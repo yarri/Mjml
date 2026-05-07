@@ -220,7 +220,13 @@ class MjHero extends _Tag {
 				- $this->getShorthandAttrValue('padding', 'top')
 				- $this->getShorthandAttrValue('padding', 'bottom');
 
-		$tdAttrs = $this->htmlAttributes(array_merge($commonAttrs, ['height' => $height]));
+		$tdAttrs = $this->htmlAttributes(array_merge($commonAttrs, [
+			'height' => $height,
+			'style' => array_merge(
+				$this->getStyles()['hero'],
+				['height' => "{$height}px"]
+			),
+		]));
 		return "<td {$tdAttrs}>{$this->renderContent()}</td>";
 	}
 

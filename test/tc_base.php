@@ -17,9 +17,9 @@ class TcBase extends TcSuperbase {
 		$expected = preg_replace('/&(?![a-zA-Z#][a-zA-Z0-9]*;)/', '&amp;', $expected);
 		$actual = preg_replace('/&(?![a-zA-Z#][a-zA-Z0-9]*;)/', '&amp;', $actual);
 		// Normalize carousel random IDs so PHP and Node.js outputs can be compared
-		// Matches "carousel-{id}-..." and "carousel-radio-{id}" and similar patterns
-		$expected = preg_replace('/carousel-(?:[a-z]+-)*[0-9a-f]{12}/', 'carousel-ID', $expected);
-		$actual = preg_replace('/carousel-(?:[a-z]+-)*[0-9a-f]{12}/', 'carousel-ID', $actual);
+		// PHP uses 12-char IDs (bin2hex(random_bytes(6))), Node.js uses 16-char IDs
+		$expected = preg_replace('/carousel-(?:[a-z]+-)*[0-9a-f]{12,16}/', 'carousel-ID', $expected);
+		$actual = preg_replace('/carousel-(?:[a-z]+-)*[0-9a-f]{12,16}/', 'carousel-ID', $actual);
 		// Also normalize mj-menu-checkbox random keys in navbar
 		$expected = preg_replace('/(?<=id=")[0-9a-f]{16}(?=")/', 'MENU-KEY', $expected);
 		$actual = preg_replace('/(?<=id=")[0-9a-f]{16}(?=")/', 'MENU-KEY', $actual);
