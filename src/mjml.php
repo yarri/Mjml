@@ -18,7 +18,7 @@ class Mjml {
 					return $matches[0];
 				}
 
-				$replacement_key = "mj-text-content-$i-$uniqid";
+				$replacement_key = "malformed-content-$i-$uniqid";
 				$i++;
 
 				// Count of lines
