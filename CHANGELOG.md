@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to Yarri\Mjml will be documented in this file.
 
+## [0.1.5] 2026-05-07
+
+* c01bd1d - Fix backward replacement of malformations
+
 ## [0.1.4] 2026-05-06
 
 * bc44cd5 - Preserve malformed HTML line height
