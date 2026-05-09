@@ -2,119 +2,119 @@
 
 PHP port of the [MJML 4.18.0](https://mjml.io/) email templating library. Converts MJML markup to responsive HTML email — without Node.js at runtime. Node.js is used only in tests (to compare output against the reference implementation).
 
-## Spuštění testů
+## Running tests
 
 ```bash
-./vendor/bin/run_unit_tests test/              # všechny testy
-./vendor/bin/run_unit_tests test/tc_mjml.php  # jeden soubor
+./vendor/bin/run_unit_tests test/              # all tests
+./vendor/bin/run_unit_tests test/tc_mjml.php  # single file
 ```
 
-Testy vyžadují Node.js (nainstalované balíčky přes `npm install`).
+Tests require Node.js (install packages via `npm install`).
 
-## Architektura
+## Architecture
 
 ```
-src/mjml.php          — vstupní bod: Yarri\Mjml::Mjml2Html($mjml)
-src/parser.php        — parsuje MJML (XMole), sestavuje strom objektů _Tag, volá render()
-src/global_data.php   — GlobalData: sdílený stav (media queries, fonty, headStyle, atributy...)
-src/skeleton.php      — generuje celý HTML dokument (head, body, media queries, CSS)
-src/tags/_tag.php     — základní třída všech tagů
-src/tags/mj_*.php     — implementace jednotlivých MJML komponent
-src/utils.php         — pomocné funkce (htmlspecialchars, atd.)
-src/core/lib/         — Helpers (widthParser, atd.) portované z JS
+src/mjml.php          — entry point: Yarri\Mjml::Mjml2Html($mjml)
+src/parser.php        — parses MJML (XMole), builds a tree of _Tag objects, calls render()
+src/global_data.php   — GlobalData: shared state (media queries, fonts, headStyle, attributes...)
+src/skeleton.php      — generates the full HTML document (head, body, media queries, CSS)
+src/tags/_tag.php     — base class for all tags
+src/tags/mj_*.php     — implementations of individual MJML components
+src/utils.php         — helper functions (htmlspecialchars, etc.)
+src/core/lib/         — Helpers (widthParser, etc.) ported from JS
 ```
 
-### Tok zpracování
+### Processing flow
 
-1. `Mjml2Html()` — pre-processing malformovaného HTML v content tazích (viz níže)
-2. XMole zparsuje MJML jako XML
-3. `Parser::parse()` — rekurzivně projde strom, pro každý `mj-*` element vytvoří instanci příslušné PHP třídy
-4. Každý tag implementuje `render()` → vrací HTML string
-5. `Skeleton::render()` — obalí výstup do kompletního HTML dokumentu
+1. `Mjml2Html()` — pre-processing of malformed HTML in content tags (see below)
+2. XMole parses MJML as XML
+3. `Parser::parse()` — recursively walks the tree; for each `mj-*` element creates an instance of the corresponding PHP class
+4. Each tag implements `render()` → returns an HTML string
+5. `Skeleton::render()` — wraps the output in a complete HTML document
 6. Post-processing: `mj-html-attributes` (DOMDocument), mergeOutlookConditionals
 
-## Implementované komponenty
+## Implemented components
 
 ### Head
-`mj-title`, `mj-preview`, `mj-font`, `mj-breakpoint`, `mj-style`, `mj-attributes` (včetně `mj-all` a `mj-class`), `mj-html-attributes`
+`mj-title`, `mj-preview`, `mj-font`, `mj-breakpoint`, `mj-style`, `mj-attributes` (including `mj-all` and `mj-class`), `mj-html-attributes`
 
 ### Body
 `mj-body`, `mj-section`, `mj-column`, `mj-wrapper`, `mj-group`, `mj-hero`, `mj-text`, `mj-image`, `mj-button`, `mj-divider`, `mj-spacer`, `mj-table`, `mj-raw`, `mj-social` + `mj-social-element`, `mj-navbar` + `mj-navbar-link`, `mj-accordion` + `mj-accordion-element` + `mj-accordion-title` + `mj-accordion-text`, `mj-carousel` + `mj-carousel-image`
 
-Všechny komponenty jsou implementovány. Výstup je ověřen proti referenční Node.js implementaci.
+All components are implemented. Output is verified against the reference Node.js implementation.
 
-## Zásady pro nové tagy
+## Guidelines for new tags
 
-1. Vytvořit `src/tags/mj_nazev_tagu.php`, třída `Yarri\Mjml\Tags\MjNazevTagu`
-2. Definovat `static $componentName`, `static $allowedAttributes`, `static $defaultAttributes`
-3. Implementovat `getStyles()` → vrací pole `['klíč' => ['css-vlastnost' => hodnota]]`
-4. Implementovat `render()` → vrací HTML string
-5. Po přidání souboru spustit `composer dump-autoload`
+1. Create `src/tags/mj_tag_name.php`, class `Yarri\Mjml\Tags\MjTagName`
+2. Define `static $componentName`, `static $allowedAttributes`, `static $defaultAttributes`
+3. Implement `getStyles()` → returns an array `['key' => ['css-property' => value]]`
+4. Implement `render()` → returns an HTML string
+5. After adding the file, run `composer dump-autoload`
 
-Při renderování potomků se používá `$this->renderChildren(callable $wrapper)` — wrapper dostane každý potomek a vrací HTML. Context se propaguje přes `getChildContext()`.
+To render children, use `$this->renderChildren(callable $wrapper)` — the wrapper receives each child and returns HTML. Context is propagated via `getChildContext()`.
 
-## Klíčové vzory a gotchas
+## Key patterns and gotchas
 
 ### headStyle vs componentHeadStyle
-- `headStyle($breakpoint)` — CSS registrované přes `GlobalData::addHeadStyle($componentName, $callable)`. **Deduplikováno per typ komponenty** — vhodné pro CSS, které je stejné pro všechny instance (accordion, navbar).
-- `componentHeadStyle()` — CSS registrované přes `GlobalData::addComponentHeadStyle($callable)`. **Per-instance** — vhodné pro CSS s unikátními ID (carousel generuje unikátní `carouselId = bin2hex(random_bytes(6))`).
+- `headStyle($breakpoint)` — CSS registered via `GlobalData::addHeadStyle($componentName, $callable)`. **Deduplicated per component type** — suitable for CSS that is the same for all instances (accordion, navbar).
+- `componentHeadStyle()` — CSS registered via `GlobalData::addComponentHeadStyle($callable)`. **Per-instance** — suitable for CSS with unique IDs (carousel generates a unique `carouselId = bin2hex(random_bytes(6))`).
 
-### Dot-notation v getStyles()
-Carousel používá vnořené klíče v `getStyles()`: `['carousel' => ['div' => [...]]]`. V `_tag.php::styles()` se podporuje zápis `'carousel.div'` pro přístup do těchto vnořených polí.
+### Dot-notation in getStyles()
+Carousel uses nested keys in `getStyles()`: `['carousel' => ['div' => [...]]]`. In `_tag.php::styles()`, the notation `'carousel.div'` is supported to access these nested arrays.
 
-### mj-class priorita atributů
-Pořadí (od nejnižší po nejvyšší prioritu):
-`mj-all` < typ komponenty (`mj-text`) < `mj-class` < explicitní atributy elementu
+### mj-class attribute priority
+Order (lowest to highest priority):
+`mj-all` < component type (`mj-text`) < `mj-class` < explicit element attributes
 
-Implementováno v `parser.php::_buildTag()`:
+Implemented in `parser.php::_buildTag()`:
 ```php
 $attributes = array_merge($globalAttrs, $tagAttrs, $classAttrs, $attributes);
 ```
 
 ### mj-html-attributes
-Post-processing přes DOMDocument + XPath. CSS selektory (`.třída`, `.a.b`, `.a .b`) se konvertují na XPath v `Parser::_cssToXPath()`. Conditional comments (`<!--[if ...]-->`) přežijí zpracování.
+Post-processing via DOMDocument + XPath. CSS selectors (`.class`, `.a.b`, `.a .b`) are converted to XPath in `Parser::_cssToXPath()`. Conditional comments (`<!--[if ...]-->`) survive processing.
 
-### Malformovaný HTML v content tazích
-Tagy `mj-text`, `mj-button`, `mj-accordion-title`, `mj-accordion-text`, `mj-table`, `mj-raw`, `mj-social-element`, `mj-navbar-link` mohou obsahovat nevalidní XML (např. `<br>` bez uzavření). Řešení v `Mjml2Html()`:
-1. Pre-processing: regex najde content těchto tagů, zkusí ho zparsovat XMole
-2. Pokud je malformovaný, nahradí ho unikátním klíčem
-3. Po render() se klíče zpětně dosadí přes `strtr()`
+### Malformed HTML in content tags
+Tags `mj-text`, `mj-button`, `mj-accordion-title`, `mj-accordion-text`, `mj-table`, `mj-raw`, `mj-social-element`, `mj-navbar-link` may contain invalid XML (e.g. `<br>` without closing). Solution in `Mjml2Html()`:
+1. Pre-processing: regex finds the content of these tags and tries to parse it with XMole
+2. If malformed, replaces it with a unique placeholder key
+3. After render(), keys are substituted back via `strtr()`
 
-Regex v `mjml.php` musí správně přeskočit self-closing tagy (`<mj-text />`). Atributová část regexu: `(?:[^>"'\/]|"[^"]*"|'[^']*'|\/(?!>))*` — povolí `/` uvnitř uvozovek (URL), ale ne těsně před `>`.
+The regex in `mjml.php` must correctly skip self-closing tags (`<mj-text />`). The attribute part of the regex: `(?:[^>"'\/]|"[^"]*"|'[^']*'|\/(?!>))*` — allows `/` inside quotes (URLs) but not immediately before `>`.
 
-### Náhodná ID a testovací normalizace
-Komponenty generující náhodná ID při porovnávání s Node.js vyžadují normalizaci v `test/tc_base.php::_compare_html()`:
-- **Carousel**: PHP generuje 12-znakové ID (`bin2hex(random_bytes(6))`), Node.js generuje 16-znakové ID (`genRandomHexString(16)`). Regex: `carousel-(?:[a-z]+-)*[0-9a-f]{12,16}` → `carousel-ID`
-- **Navbar**: 16-znakový hex klíč v `id=` a `for=` atributech. Regex: `[0-9a-f]{16}` uvnitř těchto atributů → `MENU-KEY`
+### Random IDs and test normalization
+Components that generate random IDs require normalization in `test/tc_base.php::_compare_html()` before comparing with Node.js output:
+- **Carousel**: PHP generates 12-char IDs (`bin2hex(random_bytes(6))`), Node.js generates 16-char IDs (`genRandomHexString(16)`). Regex: `carousel-(?:[a-z]+-)*[0-9a-f]{12,16}` → `carousel-ID`
+- **Navbar**: 16-char hex key in `id=` and `for=` attributes. Regex: `[0-9a-f]{16}` inside these attributes → `MENU-KEY`
 
-### Změny oproti MJML 4.13.0 (implementované pro 4.18.0)
+### Changes from MJML 4.13.0 (implemented for 4.18.0)
 
-- **mj-body**: `aria-label` z `<mj-title>` se přidává na wrapper `<div>` těla (`$this->context->globalData->title`).
-- **mj-section**: `border-radius` přesunut z `table` stylu na `td` styl; při nastaveném `border-radius` se přidá `border-collapse: separate` na `table` a `overflow: hidden` na `div`.
-- **mj-column**: při nastaveném `border-radius` nebo `inner-border-radius` se přidá `border-collapse: separate` na outer table v `renderGutter()`; `vertical-align` HTML atribut odstraněn z inner `<td>` ve `renderColumn()`.
-- **mj-hero**: v `fixed-height` režimu se výška zapisuje také do CSS stylu (`height: Xpx`), nejen jako HTML atribut.
-- **mj-social-element**: atribut `height` odstraněn z `<img>`; přidán `text-align` do stylu `tdText`; `alt=""` je výchozí hodnota.
-- **mj-social**: propagace atributů z rodiče do `mj-social-element` přeskočí `null` hodnoty (jinak by přepisovala výchozí hodnoty elementu).
-- **mj-accordion**: `font-family` se propaguje přes context (`accordionFontFamily`), ne přes childrenAttrs — aby se nedostal na `<label>` element. `mj-accordion-element` propaguje dál jako `elementFontFamily`. `mj-accordion-title` a `mj-accordion-text` používají `resolveFontFamily()` s pořadím: vlastní atribut → elementFontFamily → accordionFontFamily.
+- **mj-body**: `aria-label` from `<mj-title>` is added to the body wrapper `<div>` (`$this->context->globalData->title`).
+- **mj-section**: `border-radius` moved from `table` style to `td` style; when `border-radius` is set, `border-collapse: separate` is added to `table` and `overflow: hidden` to `div`.
+- **mj-column**: when `border-radius` or `inner-border-radius` is set, `border-collapse: separate` is added to the outer table in `renderGutter()`; the `vertical-align` HTML attribute is removed from the inner `<td>` in `renderColumn()`.
+- **mj-hero**: in `fixed-height` mode, the height is also written to the CSS style (`height: Xpx`), not only as an HTML attribute.
+- **mj-social-element**: `height` attribute removed from `<img>`; `text-align` added to the `tdText` style; `alt=""` is the default value.
+- **mj-social**: propagation of parent attributes to `mj-social-element` skips `null` values (otherwise it would override the element's default values).
+- **mj-accordion**: `font-family` is propagated via context (`accordionFontFamily`), not via childrenAttrs — to prevent it from reaching the `<label>` element. `mj-accordion-element` propagates it further as `elementFontFamily`. `mj-accordion-title` and `mj-accordion-text` use `resolveFontFamily()` with the order: own attribute → elementFontFamily → accordionFontFamily.
 
-### Replikované bugy z JS
-Některé chování PHP záměrně replikuje bugy Node.js implementace, aby výstup byl identický:
-- **mj-navbar div style**: JS volá `this.htmlAttributes('div')` (string místo objektu) → vždy vrací `''` → `style=""`. PHP proto předává `'style' => ''` explicitně.
-- **mj-carousel-image class**: JS template literal vždy přidá mezeru + cssClass, i když je prázdný → trailing space v class atributu.
+### Replicated JS bugs
+Some PHP behaviour intentionally replicates Node.js implementation bugs to produce identical output:
+- **mj-navbar div style**: JS calls `this.htmlAttributes('div')` (string instead of object) → always returns `''` → `style=""`. PHP therefore passes `'style' => ''` explicitly.
+- **mj-carousel-image class**: JS template literal always appends a space + cssClass, even when empty → trailing space in the class attribute.
 
-### Compatibility PHP 7.1+
-- Bez trailing čárek za posledním argumentem funkce (přidáno v PHP 7.3)
-- Bez `??=` operátoru (PHP 7.4)
-- Bez named arguments (PHP 8.0)
+### PHP 7.1+ compatibility
+- No trailing commas after the last function argument (added in PHP 7.3)
+- No `??=` operator (PHP 7.4)
+- No named arguments (PHP 8.0)
 
-## Testovací infrastruktura
+## Test infrastructure
 
-- `test/tc_base.php` — základní třída s `assertHtmlEquals()` a `_mjml_node()`
-- `assertHtmlEquals($expected, $actual)` — porovná body část HTML přes XMole (XML parser); normalizuje whitespace, `&`, náhodná ID
-- `_mjml_node($src)` — spustí Node.js MJML na vstupu a vrátí HTML pro srovnání
-- XMole je expat-based XML parser — **nesnáší holé `&`** (musí být `&amp;`) a **HTML named entity** (`&copy;` → použít `&#169;`)
+- `test/tc_base.php` — base class with `assertHtmlEquals()` and `_mjml_node()`
+- `assertHtmlEquals($expected, $actual)` — compares the body part of HTML via XMole (XML parser); normalizes whitespace, `&`, and random IDs
+- `_mjml_node($src)` — runs Node.js MJML on the input and returns HTML for comparison
+- XMole is an expat-based XML parser — **does not tolerate bare `&`** (must be `&amp;`) and **HTML named entities** (`&copy;` → use `&#169;`)
 
-## Závislosti
+## Dependencies
 
-- `atk14/xmole` — XML parser (expat) používaný jak v produkci (parsování MJML), tak v testech (porovnávání HTML)
-- Node.js `mjml@4.18.0` — pouze pro testy (dev dependency)
+- `atk14/xmole` — XML parser (expat) used both in production (MJML parsing) and in tests (HTML comparison)
+- Node.js `mjml@4.18.0` — for tests only (dev dependency)
