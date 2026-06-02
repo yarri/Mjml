@@ -8,17 +8,19 @@ class Mjml {
 		$i = 1;
 		$uniqid = uniqid();
 		$mjml = preg_replace_callback(
-			'/(<(mj-text|mj-button|mj-accordion-title|mj-accordion-text|mj-table|mj-raw|mj-social-element|mj-navbar-link)\b(?:[^>"\'\/]|"[^"]*"|\'[^\']*\'|\/(?!>))*>)(.*?)(<\/\2>)/s',
+			'/(<(?<tag_name>mj-text|mj-button|mj-accordion-title|mj-accordion-text|mj-table|mj-raw|mj-social-element|mj-navbar-link)\b(?:[^>"\'\/]|"[^"]*"|\'[^\']*\'|\/(?!>))*>)(.*?)(<\/\2>)/s',
 			function($matches) use(&$i,$uniqid,&$replaces_for_malformations){
 				$content = $matches[3];
 
-				$xmole = new \XMole("<xml>$content</xml>");
-				if(!$xmole->error()){
-					// Not malformed
-					return $matches[0];
+				if($matches["tag_name"]!=="mj-raw"){ // The contents of the mj-raw tag should remain unchanged
+					$xmole = new \XMole("<xml>$content</xml>");
+					if(!$xmole->error()){
+						// Not malformed
+						return $matches[0];
+					}
 				}
 
-				$replacement_key = "malformed-content-$i-$uniqid";
+				$replacement_key = "malformed-or-raw-content-$i-$uniqid";
 				$i++;
 
 				// Count of lines
