@@ -36,15 +36,14 @@ class TcMjRaw extends TcBase {
 		$src = '
 			<mjml>
 				<mj-body>
-					<mj-section>
-						<mj-column>
-							<mj-raw><!-- header --></mj-raw>
-						</mj-column>
-					</mj-section>
+					<mj-raw><!-- header --></mj-raw>
 				</mj-body>
 			</mjml>
 		';
 		$html = Yarri\Mjml::Mjml2Html($src);
 		$this->assertStringContains('<!-- header -->', $html);
+
+		$html_node = $this->_mjml_node($src);
+		$this->assertHtmlEquals($html_node, $html);
 	}
 }
