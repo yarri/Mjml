@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to Yarri\Mjml will be documented in this file.
 
+## [0.2.1] 2026-06-02
+
+* 3ee64b0 - The contents of the mj-raw tag should remain unchanged (after the MJML to HTML conversion)
+
 ## [0.2] 2026-05-07
 
 * Implemented all changes from the original MJML to version 4.18.0
