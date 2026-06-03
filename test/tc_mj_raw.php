@@ -44,6 +44,7 @@ class TcMjRaw extends TcBase {
 		$this->assertStringContains('<!-- header -->', $html);
 
 		$html_node = $this->_mjml_node($src);
+		$this->assertStringContains('<!-- header -->', $html_node);
 		$this->assertHtmlEquals($html_node, $html);
 	}
 }
