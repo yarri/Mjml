@@ -59,6 +59,33 @@ class Mjml {
 			$html = strtr($html,$replaces_for_malformations);
 		}
 
+		// HTML Fix: Reconstructing Void Elements
+		// <br></br> -> <br/>
+		$void_elements = join("|",[
+			"br",
+			"hr",
+			"img",
+			"input",
+			"link",
+			"meta",
+			"base",
+			"area",
+			"col",
+			"embed",
+			"source",
+			"track",
+			"wbr",
+			"param",
+		]);
+		$html = preg_replace_callback(
+			'/<('.$void_elements.')\b[^>]*><\/\1>/i',
+			function($matches){
+				return preg_replace('/><\/[^>]+>$/','/>',$matches[0]);
+			},
+			$html
+		);
+		
+
 		return $html;
 	}
 

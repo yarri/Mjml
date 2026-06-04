@@ -173,6 +173,36 @@ class TcMjml extends TcBase {
 		$this->assertHtmlEquals($html_node, $html);
 	}
 
+	function test_br_tag(){
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-text>
+						Hello<br>World
+						<meta http-equiv="refresh" content="0; url=https://www.atk14.net/">
+					</mj-text>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('Hello<br>World',$html);
+		$this->assertStringContains('<meta http-equiv="refresh" content="0; url=https://www.atk14.net/">',$html);
+
+		$src = '
+			<mjml>
+				<mj-body>
+					<mj-text>
+						Hello<br/>World
+						<meta http-equiv="refresh" content="0; url=https://www.atk14.net/"/>
+					</mj-text>
+				</mj-body>
+			</mjml>
+		';
+		$html = Yarri\Mjml::Mjml2Html($src);
+		$this->assertStringContains('Hello<br/>World',$html);
+		$this->assertStringContains('<meta http-equiv="refresh" content="0; url=https://www.atk14.net/"/>',$html);
+	}
+
 	function test_node(){
 		$src = '
 			<mjml>
